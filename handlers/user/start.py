@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.util import await_fallback
 
 from config import PASSPORTS_PHOTO_PATH, DRIVE_LICENSES_PATH
+from database.dao import UserDAO
 from database.utils import connection
 from fsm.user.main import RegistrationFSM
 

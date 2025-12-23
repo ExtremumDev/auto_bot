@@ -53,25 +53,8 @@ class UserDAO(BaseDAO):
     model = User
 
     @classmethod
-    async def register_user(
-        cls,
-        session: AsyncSession,
-        telegram_id: int,
-        username: str,
-        has_bot_chat: bool,
-        is_admin: bool = False
-    ) -> User:
-        return await cls.add(
-            session,
-            telegram_id=telegram_id,
-            telegram_username=username,
-            has_private=has_bot_chat,
-            is_admin=is_admin
-        )
-
-    @classmethod
     async def get_obj(cls, session: AsyncSession, **values):
-        query = select(cls.model).options(selectinload(User.profile)).filter_by(**values)
+        query = select(cls.model).options(selectinload(User.driver)).filter_by(**values)
 
         result = await session.execute(query)
         obj = result.scalar_one_or_none()
