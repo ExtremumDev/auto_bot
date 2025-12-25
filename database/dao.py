@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import select, asc, update
 from sqlalchemy.orm import joinedload, selectinload
 
-from .models import User, MemberEvent, EventMembership, Initiative, UserProfile, DatingProfile
+from .models import User, Driver, Car
 
 
 class BaseDAO:
@@ -59,3 +59,21 @@ class UserDAO(BaseDAO):
         result = await session.execute(query)
         obj = result.scalar_one_or_none()
         return obj
+
+    @classmethod
+    async def get_user_with_cars(cls, session: AsyncSession, telegram_id: int):
+        query = select(cls.model).options(selectinload(User.driver), selectinload(User.cars)).filter_by(
+            telegram_id=telegram_id
+        )
+
+        result = await session.execute(query)
+        obj = result.scalar_one_or_none()
+        return obj
+
+
+class DriverDAO(BaseDAO):
+    model = Driver
+
+
+class CarDAO(BaseDAO):
+    model = Car

@@ -34,3 +34,9 @@ os.makedirs(PASSPORTS_PHOTO_PATH, exist_ok=True)
 
 DRIVE_LICENSES_PATH = DOWNLOAD_DIR / "drive_licenses"
 os.makedirs(DRIVE_LICENSES_PATH, exist_ok=True)
+
+CAR_PHOTO_PATH = DOWNLOAD_DIR / "cars"
+os.makedirs(CAR_PHOTO_PATH, exist_ok=True)
+
+CAR_VIDEO_PATH = DOWNLOAD_DIR / "car_video"
+os.makedirs(CAR_PHOTO_PATH, exist_ok=True)

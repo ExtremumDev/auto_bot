@@ -1,49 +1,15 @@
-import datetime
-from pathlib import Path
-
-from aiogram import types, Dispatcher, F
+from aiogram import types, Dispatcher
 from aiogram.filters import CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.enums import ChatType, ContentType
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.util import await_fallback
 
 from config import PASSPORTS_PHOTO_PATH, DRIVE_LICENSES_PATH
-from database.dao import UserDAO
+from database.dao import UserDAO, DriverDAO
 from database.utils import connection
 from fsm.user.main import RegistrationFSM
-
-
-async def check_and_save_photo(message: types.Message, save_path: Path, file_name_format: str) -> bool | str:
-    """
-
-    :param message:
-    :param save_path:
-    :param file_name_format:
-    :return: if image correct and was saved - file name will be returned, else - false
-    """
-    if message.photo:
-        file_name = file_name_format.format(user_id=message.from_user.id, datetime=datetime.datetime.now().strftime("%d-%m-%Y_%H-%M"))
-
-        await message.bot.download(
-            message.photo[-1].file_id,
-            save_path / file_name
-        )
-
-        return file_name
-
-
-    elif message.document:
-        await message.answer(
-            "Пожалуйста пришлите фотографию не как файл, а как картинку"
-        )
-    else:
-        await message.answer(
-            "Необходимо прислать фотографию! Попробуйте еще раз"
-        )
-    return False
-
+from markups.user.main import get_main_markup
+from utils.utils import check_and_save_photo
 
 
 @connection
@@ -51,32 +17,28 @@ async def start_cmd(m: types.Message, state: FSMContext, db_session: AsyncSessio
     await state.clear()
 
     user = await UserDAO.get_obj(db_session, telegram_id=m.from_user.id)
-    reg = False
-    if not user:
-        reg = True
-        await UserDAO.register_user(
-            db_session, m.from_user.id, m.from_user.username, False
-        )
-    else:
-        if not user.has_private:
-            reg = True
+    if user:
+        if user.driver:
+            await m.answer(
+                "Здравствуйте",
+                reply_markup=get_main_markup()
+            )
+        else:
+            await state.set_state(RegistrationFSM.full_name_state)
+            await m.answer(
+                "Приветствую! Необходимо зарегистрироваться. Введите свое ФИО"
+            )
 
-        if m.from_user.username != user.telegram_username:
-            user.telegram_username = m.from_user.username
-            await db_session.commit()
-
-    if reg:
-        await state.set_state(RegistrationFSM.name_state)
-        await m.answer_photo(
-            photo=types.FSInputFile("images/start_image.jpg"),
-            caption="""
-Приветстсвую! Я твой помощник в комьюнити RendezVous.\n\n Давай познакомимся. Как тебя зовут? Напиши имя и фамилию
-"""
-        )
     else:
+        await UserDAO.add(
+            db_session,
+            telegram_id=m.from_user.id,
+            telegram_username=m.from_user.username
+        )
+
+        await state.set_state(RegistrationFSM.full_name_state)
         await m.answer(
-            "Открыто главное меню",
-            reply_markup=main_user_markup
+            "Приветствую! Необходимо зарегистрироваться. Введите свое ФИО"
         )
 
 #-------------
@@ -117,7 +79,7 @@ async def handle_passport(m: types.Message, state: FSMContext):
     # verify
 
     await state.set_state(RegistrationFSM.passport_photo_state)
-    await state.update_data(passport_number=m.text)
+    await state.update_data(passport_number=m.text.strip())
 
     await m.answer(
         "Пришлите фотографию первой страницы своего паспорта",
@@ -126,7 +88,7 @@ async def handle_passport(m: types.Message, state: FSMContext):
 
 async def handle_passport_photo(m: types.Message, state: FSMContext):
 
-    file_name = check_and_save_photo(m, PASSPORTS_PHOTO_PATH, "Паспорт_{user_id}_{datetime}")
+    file_name = await check_and_save_photo(m, PASSPORTS_PHOTO_PATH, "Паспорт_{user_id}_{datetime}")
 
     if file_name:
 
@@ -156,42 +118,52 @@ async def handle_license_number(m: types.Message, state: FSMContext):
     # verify
 
     await state.set_state(RegistrationFSM.license_photo_1_state)
-    await state.update_data(license_number=m.text)
+    await state.update_data(license_number=m.text.strip())
 
     await m.answer("Пришлите фотографию фронтальной стороны водительских прав")
 
 
 async def handle_first_license_photo(m: types.Message, state: FSMContext):
 
-    file_name = check_and_save_photo(m, DRIVE_LICENSES_PATH, "Права_Страница_1_{user_id}_{datetime}")
+    file_name = await check_and_save_photo(m, DRIVE_LICENSES_PATH, "Права_Страница_1_{user_id}_{datetime}")
     if m.photo:
         await state.set_state(RegistrationFSM.license_photo_2_state)
-        await state.update_data(passport_photo=file_name)
+        await state.update_data(license_photo_1=file_name)
 
         await m.answer(
             "Отлично! Теперь пришлите фотографию задней стороны водительских прав",
         )
 
 
-async def handle_second_license_photo(m: types.Message, state: FSMContext):
+@connection
+async def handle_second_license_photo(m: types.Message, state: FSMContext, db_session: AsyncSession, *args):
 
-    file_name = check_and_save_photo(m, DRIVE_LICENSES_PATH, "Права_Страница_2_{user_id}_{datetime}")
-    if m.photo:
-        await state.set_state(RegistrationFSM.license_photo_2_state)
-        await state.update_data(passport_photo=file_name)
+    file_name = await check_and_save_photo(m, DRIVE_LICENSES_PATH, "Права_Страница_2_{user_id}_{datetime}")
+    if file_name:
+        await state.update_data(license_photo_2=file_name)
 
-        await m.answer(
-            "Отлично! Теперь пришлите фотографию задней стороны водительских прав",
+        s_data = await state.get_data()
+        await state.clear()
+
+        driver = await DriverDAO.add(
+            session=db_session,
+            full_name=s_data['full_name'][:79],
+            phone_number=s_data['phone'][:11],
+            city=s_data['city'][:19],
+            passport_number=s_data['passport_number'][:14],
+            passport_photo=s_data['passport_photo'],
+            drive_exp=s_data['drive_exp'],
+            license_number=s_data['license_number'][:9],
+            license_photo_1=s_data['license_photo_1'],
+            license_photo_2=s_data['license_photo_2']
         )
 
+        user = await UserDAO.get_obj(session=db_session, telegram_id=m.from_user.id)
+        user.driver = driver
+        await db_session.commit()
 
-    elif m.document:
         await m.answer(
-            "Пожалйста пришлите фотографию не как файл, а как картинку"
-        )
-    else:
-        await m.answer(
-            "Необходимо прислать фотографию! Попробуйте еще раз"
+            "Отлично! Регистрация прошла успешно. Теперь время добавить даные автомобиля",
         )
 
 
