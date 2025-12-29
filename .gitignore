@@ -4,3 +4,4 @@ venv
 logging
 .idea
 user_data/
+migration/versions
