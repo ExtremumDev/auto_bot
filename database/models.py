@@ -81,7 +81,7 @@ class Car(Base):
     sts_series: Mapped[str] = mapped_column(String(15), nullable=True)
     sts_number: Mapped[str] = mapped_column(String(15))
 
-    car_class: Mapped[CarClass] = mapped_column(Enum(CarClass, name="car_class"), default=CarClass.BASE_CAR, nullable=False)
+    car_class: Mapped[CarClass] = mapped_column(String(10), default=CarClass.BASE_CAR, nullable=False)
 
     photo: Mapped[str] = mapped_column(String(100))
     video: Mapped[str] = mapped_column(String(100), nullable=True)
