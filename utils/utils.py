@@ -66,7 +66,8 @@ async def check_and_save_video_message(message: types.Message, save_path: Path, 
 
         await message.bot.download_file(
             file.file_path,
-            save_path / file_name
+            save_path / file_name,
+            timeout=60
         )
 
         return file_name

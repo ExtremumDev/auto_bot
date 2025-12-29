@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 
@@ -24,6 +25,44 @@ class Settings(BaseSettings):
         
 settings = Settings()
 
+# Users
+class AdminsSettings:
+    MAIN_ADMIN_ID = [1005462960]
+    ADMIN_ID = [1005462960]
+
+    @classmethod
+    def load_admins(cls):
+        try:
+            with open("admins.json", 'r') as admin_file:
+                data = json.load(admin_file)
+
+                cls.MAIN_ADMIN_ID = data.get('main_admin', [])
+                cls.ADMIN_ID = data.get('admins', [])
+
+        except FileNotFoundError:
+            pass
+
+    @classmethod
+    def save_admins(cls):
+        with open('admins.json', 'w') as admin_file:
+            json.dump(
+                {
+                    'main_admin': cls.MAIN_ADMIN_ID,
+                    'admins': cls.ADMIN_ID
+                },
+                admin_file
+            )
+
+    @classmethod
+    def add_admin(cls, user_id):
+        if not user_id in cls.ADMIN_ID:
+            cls.ADMIN_ID.append(user_id)
+
+    @classmethod
+    def remove_admin(cls, user_id):
+        if user_id in cls.ADMIN_ID:
+            cls.ADMIN_ID.remove(user_id)
+
 # Save paths
 
 DOWNLOAD_DIR = Path("user_data")
@@ -39,4 +78,16 @@ CAR_PHOTO_PATH = DOWNLOAD_DIR / "cars"
 os.makedirs(CAR_PHOTO_PATH, exist_ok=True)
 
 CAR_VIDEO_PATH = DOWNLOAD_DIR / "car_video"
-os.makedirs(CAR_PHOTO_PATH, exist_ok=True)
+os.makedirs(CAR_VIDEO_PATH, exist_ok=True)
+
+# texts
+
+class RulesData:
+    rules = "Правила"
+
+try:
+    with open("rules.txt", 'r', encoding='utf-8') as file:
+        RulesData.rules = file.read()
+
+except FileNotFoundError:
+    pass

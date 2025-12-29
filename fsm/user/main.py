@@ -15,3 +15,7 @@ class RegistrationFSM(StatesGroup):
     license_series_state = State()
     license_photo_1_state = State()
     license_photo_2_state = State()
+
+
+class EditFormFSM(StatesGroup):
+    edit_state = State()

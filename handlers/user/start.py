@@ -1,4 +1,4 @@
-from aiogram import types, Dispatcher
+from aiogram import types, Dispatcher, F
 from aiogram.filters import CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 
@@ -8,7 +8,9 @@ from config import PASSPORTS_PHOTO_PATH, DRIVE_LICENSES_PATH
 from database.dao import UserDAO, DriverDAO
 from database.utils import connection
 from fsm.user.main import RegistrationFSM
-from markups.user.main import get_main_markup
+from markups.admin.user_manage import get_moderate_driver_markup
+from markups.user.main import get_main_markup, start_markup
+from utils.messaging import send_message_to_admins
 from utils.utils import check_and_save_photo
 
 
@@ -18,16 +20,11 @@ async def start_cmd(m: types.Message, state: FSMContext, db_session: AsyncSessio
 
     user = await UserDAO.get_obj(db_session, telegram_id=m.from_user.id)
     if user:
-        if user.driver:
-            await m.answer(
-                "Здравствуйте",
-                reply_markup=get_main_markup()
-            )
-        else:
-            await state.set_state(RegistrationFSM.full_name_state)
-            await m.answer(
-                "Приветствую! Необходимо зарегистрироваться. Введите свое ФИО"
-            )
+
+        await m.answer(
+            "Что хотите сделать?",
+            reply_markup=get_main_markup(m.from_user.id)
+        )
 
     else:
         await UserDAO.add(
@@ -36,14 +33,32 @@ async def start_cmd(m: types.Message, state: FSMContext, db_session: AsyncSessio
             telegram_username=m.from_user.username
         )
 
-        await state.set_state(RegistrationFSM.full_name_state)
         await m.answer(
-            "Приветствую! Необходимо зарегистрироваться. Введите свое ФИО"
+            "Добро пожаловать! Если вы водитель - заполните анкету по кнопке ниже👇"
+"Если нет - перейдите в главное меню по другой кнопке",
+            reply_markup=start_markup
         )
+
 
 #-------------
 # REGISTRATION
 #-------------
+
+@connection
+async def start_registration(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession, *args):
+    user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
+
+    if user.driver:
+        await c.answer(
+            "Вы уже заполняли анкету",
+            show_alert=True
+        )
+    else:
+        await state.set_state(RegistrationFSM.full_name_state)
+
+        await c.message.answer("Введите сво ФИО")
+
+        await c.answer()
 
 async def handle_full_name(m: types.Message, state: FSMContext):
     await state.set_state(RegistrationFSM.phone_number_state)
@@ -145,6 +160,8 @@ async def handle_second_license_photo(m: types.Message, state: FSMContext, db_se
         s_data = await state.get_data()
         await state.clear()
 
+        user = await UserDAO.get_obj(session=db_session, telegram_id=m.from_user.id)
+
         driver = await DriverDAO.add(
             session=db_session,
             full_name=s_data['full_name'][:79],
@@ -155,15 +172,26 @@ async def handle_second_license_photo(m: types.Message, state: FSMContext, db_se
             drive_exp=s_data['drive_exp'],
             license_number=s_data['license_number'][:9],
             license_photo_1=s_data['license_photo_1'],
-            license_photo_2=s_data['license_photo_2']
+            license_photo_2=s_data['license_photo_2'],
+            user_id=user.id
         )
 
-        user = await UserDAO.get_obj(session=db_session, telegram_id=m.from_user.id)
         user.driver = driver
         await db_session.commit()
 
+        await send_message_to_admins(
+            message="Новый пользователь заполнил анкету, ожидается модерация",
+            reply_markup=get_moderate_driver_markup(user.id)
+
+        )
+
         await m.answer(
-            "Отлично! Регистрация прошла успешно. Теперь время добавить даные автомобиля",
+            "Отлично! Анкета была заполнена успешно и отправлена на модерациюю администраторам",
+            # reply_markup=types.InlineKeyboardMarkup(
+            #     inline_keyboard=[
+            #         [types.InlineKeyboardButton(text="Добавить автомобиль", callback_data="add_car")]
+            #     ]
+            # )
         )
 
 
@@ -174,6 +202,7 @@ def register_user_start_handlers(dp: Dispatcher):
         StateFilter('*')
     )
 
+    dp.callback_query.register(start_registration, F.data == "fill_form")
     dp.message.register(handle_full_name, StateFilter(RegistrationFSM.full_name_state))
     dp.message.register(handle_phone_number, StateFilter(RegistrationFSM.phone_number_state))
     dp.message.register(handle_city, StateFilter(RegistrationFSM.city_state))

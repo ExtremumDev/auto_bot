@@ -7,27 +7,36 @@ from config import CAR_PHOTO_PATH, CAR_VIDEO_PATH
 from database.dao import UserDAO, CarDAO
 from database.utils import connection
 from fsm.user.car_manage import AddingCarFSM
-from markups.user.car_manage import car_class_markup
 from utils.enums import CarClass
 from utils.utils import check_and_save_photo, check_and_save_video_message
 
 
 @connection
 async def start_car_registration(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession, *args):
-    user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
+    user = await UserDAO.get_user_with_cars(session=db_session, telegram_id=c.from_user.id)
 
-    if user.cars and len(user.cars) >= 3:
-        await c.answer(
-            show_alert=True,
-            text="Превышен лимит автомобилей!"
-        )
+    if user.driver:
+        if user.cars and len(user.cars) >= 3:
+            await c.answer(
+                show_alert=True,
+                text="Превышен лимит автомобилей!"
+            )
 
+        else:
+            await state.set_state(AddingCarFSM.brand_state)
+            await c.message.answer(
+                "Введите марку автомобиля"
+            )
+            await c.answer()
     else:
-        await state.set_state(AddingCarFSM.brand_state)
         await c.message.answer(
-            "Введите марку автомобиля"
+            "Сначала необходимо заполнить анкету водтителя",
+            reply_markup=types.InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [types.InlineKeyboardButton(text="Перейти к заполнению", callback_data="fill_form")]
+                ]
+            )
         )
-        await c.answer()
 
 
 async def handle_brand(m: types.Message, state: FSMContext):
@@ -81,12 +90,12 @@ async def handle_sts(m: types.Message, state: FSMContext):
 
     await m.answer(
         "Выберите класс вашего автомобиля:\n",
-        reply_markup=car_class_markup
+        reply_markup=CarClass.get_choice_by_passengers_number()
     )
 
 
 async def handle_car_class(c: types.CallbackQuery, state: FSMContext):
-    car_class_id = int(c.data.strip('_')[1])
+    car_class_id = c.data.split('_')[1]
 
     await state.set_state(AddingCarFSM.photo_state)
     await state.update_data(car_class=car_class_id)
@@ -112,7 +121,7 @@ async def handle_car_photo(m: types.Message, state: FSMContext):
 
 @connection
 async def handle_video_message(m: types.Message, state: FSMContext, db_session: AsyncSession, *args):
-    file_name = check_and_save_video_message(m, CAR_VIDEO_PATH, "Видео_автомобиль_{user_id}_{datetime}")
+    file_name = await check_and_save_video_message(m, CAR_VIDEO_PATH, "Видео_автомобиль_{user_id}_{datetime}")
 
     if file_name:
         await state.update_data(car_video=file_name)
@@ -129,7 +138,7 @@ async def handle_video_message(m: types.Message, state: FSMContext, db_session: 
             release_year=s_data["year"],
             car_number=s_data["car_number"],
             sts_number=s_data["sts_number"],
-            car_class=CarClass(s_data["car_class"]),
+            car_class=s_data["car_class"],
             photo=s_data["car_photo"],
             video=s_data["car_video"],
             user_id=user.id

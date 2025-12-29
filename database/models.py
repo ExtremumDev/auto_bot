@@ -1,12 +1,13 @@
+import datetime
 from typing import List
 
 from sqlalchemy.orm import (
     DeclarativeBase, declared_attr, Mapped, mapped_column, relationship
 )
 from sqlalchemy.ext.asyncio import AsyncAttrs
-from sqlalchemy import BigInteger, func, String, Boolean, ForeignKey
+from sqlalchemy import BigInteger, func, String, Boolean, ForeignKey, Enum
 
-from utils.enums import CarClass
+from utils.enums import CarClass, UserType
 
 
 class Base(AsyncAttrs, DeclarativeBase):
@@ -32,6 +33,11 @@ class User(Base):
     telegram_id: Mapped[int] = mapped_column(BigInteger)
     telegram_username: Mapped[str] = mapped_column(String(35))
 
+    user_type: Mapped[UserType] = mapped_column(Enum(UserType, name="user_type"), nullable=True)
+
+    is_blocked: Mapped[bool] = mapped_column(default=False)
+    is_admin: Mapped[bool] = mapped_column(server_default="0")
+
     driver_id: Mapped[int] = mapped_column(ForeignKey("drivers.id"), nullable=True)
     driver: Mapped["Driver"] = relationship("Driver", back_populates="user")
 
@@ -42,7 +48,10 @@ class User(Base):
 
 
 class Driver(Base):
+    user_id: Mapped[int] = mapped_column(nullable=True)
     user: Mapped["User"] = relationship("User", back_populates="driver")
+
+    date_time: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
 
     full_name: Mapped[str] = mapped_column(String(80))
     phone_number: Mapped[str] = mapped_column(String(12))
@@ -58,6 +67,8 @@ class Driver(Base):
     license_photo_1: Mapped[str] = mapped_column(String(50))
     license_photo_2: Mapped[str] = mapped_column(String(50))
 
+    is_moderated: Mapped[bool] = mapped_column(default=False)
+
 
 
 class Car(Base):
@@ -70,11 +81,28 @@ class Car(Base):
     sts_series: Mapped[str] = mapped_column(String(15), nullable=True)
     sts_number: Mapped[str] = mapped_column(String(15))
 
-    car_class: Mapped[CarClass] = mapped_column()
+    car_class: Mapped[CarClass] = mapped_column(Enum(CarClass, name="car_class"), default=CarClass.BASE_CAR, nullable=False)
 
-    photo: Mapped[str] = mapped_column()
-    video: Mapped[str] = mapped_column(nullable=True)
+    photo: Mapped[str] = mapped_column(String(100))
+    video: Mapped[str] = mapped_column(String(100), nullable=True)
 
     user: Mapped["User"] = relationship("User")
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+
+
+class CrossCityOrder(Base):
+    from_city: Mapped[str] = mapped_column(String(50))
+    from_add: Mapped[str] = mapped_column(String(100))
+
+    destination_city: Mapped[str] = mapped_column(String(50))
+    destination_add: Mapped[str] = mapped_column(String(100))
+
+    intermediate_points: Mapped[str] = mapped_column(String(100))
+
+    speed: Mapped[int] = mapped_column()
+    date: Mapped[datetime.date] = mapped_column(nullable=True)
+    time: Mapped[str] = mapped_column(String(20))
+
+    passengers_number: Mapped[int] = mapped_column()
+    car_class: Mapped[CarClass] = mapped_column(String(10))
 

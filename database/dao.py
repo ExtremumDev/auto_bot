@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import select, asc, update
 from sqlalchemy.orm import joinedload, selectinload
 
-from .models import User, Driver, Car
+from .models import User, Driver, Car, CrossCityOrder
 
 
 class BaseDAO:
@@ -48,6 +48,12 @@ class BaseDAO:
         query = delete(cls.model).filter_by(id=obj_id)
         await session.execute(query)
 
+    @classmethod
+    async def get_many(cls, session: AsyncSession, **kwargs):
+        query = select(cls.model).filter_by(**kwargs)
+        res = await session.execute(query)
+        return res.scalars().all()
+
 
 class UserDAO(BaseDAO):
     model = User
@@ -61,9 +67,9 @@ class UserDAO(BaseDAO):
         return obj
 
     @classmethod
-    async def get_user_with_cars(cls, session: AsyncSession, telegram_id: int):
+    async def get_user_with_cars(cls, session: AsyncSession, **kwargs):
         query = select(cls.model).options(selectinload(User.driver), selectinload(User.cars)).filter_by(
-            telegram_id=telegram_id
+            **kwargs
         )
 
         result = await session.execute(query)
@@ -71,9 +77,41 @@ class UserDAO(BaseDAO):
         return obj
 
 
+    @classmethod
+    async def get_drivers(cls, session: AsyncSession):
+        query = select(cls.model).filter(
+            User.driver_id != None
+        )
+
+        res = await session.execute(query)
+
+        return res.scalars().all()
+
+
 class DriverDAO(BaseDAO):
     model = Driver
 
 
+    @classmethod
+    async def get_all_user_forms(cls, session: AsyncSession, **kwargs):
+        query = select(cls.model).filter_by(
+            **kwargs
+        )
+        res = await session.execute(query)
+        return res.scalars().all()
+
+
+    @classmethod
+    async def get_driver_form(cls, session: AsyncSession, obj_id):
+        query = select(cls.model).options(selectinload(Driver.user)).filter_by(
+            id=obj_id
+        )
+        res = await session.execute(query)
+        return res.scalar_one_or_none()
+
 class CarDAO(BaseDAO):
     model = Car
+
+
+class CrossCityOrderDAO(BaseDAO):
+    model = CrossCityOrder
