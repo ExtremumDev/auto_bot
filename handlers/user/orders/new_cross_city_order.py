@@ -3,7 +3,7 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.dao import OrderDAO
+from database.dao import OrderDAO, UserDAO
 from database.utils import connection
 from fsm.user.order import CrossCityOrderFSM
 from markups.user.order import order_speed_markup
@@ -133,7 +133,10 @@ async def handle_car_class(c: types.CallbackQuery, state: FSMContext, db_session
     s_data = await state.get_data()
     await state.clear()
 
+    user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
+
     order = await OrderDAO.add_order(
+        creator_id=user.id,
         session=db_session,
         order_type=OrderType.CROSS_CITY,
         from_city=s_data["from_city"],

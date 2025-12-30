@@ -3,7 +3,7 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.dao import OrderDAO
+from database.dao import OrderDAO, UserDAO
 from database.utils import connection
 from fsm.user.order import PlaceOrderFSM, DeliveryOrderFSM, SoberDriverFSM
 from markups.user.order import order_type_markup
@@ -43,7 +43,10 @@ async def handle_city_description(m: types.Message, state: FSMContext, db_sessio
     s_data = await state.get_data()
     await state.clear()
 
+    user = await UserDAO.get_obj(session=db_session, telegram_id=m.from_user.id)
+
     order = await OrderDAO.add_order(
+        creator_id=user.id,
         session=db_session,
         order_type=OrderType.CITY,
         settlement=s_data['settlement'],
@@ -80,7 +83,10 @@ async def handle_delivery_description(m: types.Message, state: FSMContext, db_se
     s_data = await state.get_data()
     await state.clear()
 
+    user = await UserDAO.get_obj(session=db_session, telegram_id=m.from_user.id)
+
     order = await OrderDAO.add_order(
+        creator_id=user.id,
         session=db_session,
         order_type=OrderType.DELIVERY,
         settlement=s_data['settlement'],
@@ -126,7 +132,10 @@ async def handle_sdriver_description(m: types.Message, state: FSMContext, db_ses
     s_data = await state.get_data()
     await state.clear()
 
+    user = await UserDAO.get_obj(session=db_session, telegram_id=m.from_user.id)
+
     order = await OrderDAO.add_order(
+        creator_id=user.id,
         session=db_session,
         order_type=OrderType.SOBER_DRIVER,
         from_point=s_data['start_point'],
