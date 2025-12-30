@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/root/club_manager/
+WorkingDirectory=/root/auto_bot/
 ExecStart=/root/auto_bot/venv/bin/python3 main.py
 Restart=on-failure
 RestartSec=10s
