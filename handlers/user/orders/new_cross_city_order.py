@@ -147,7 +147,7 @@ async def handle_car_class(c: types.CallbackQuery, state: FSMContext, db_session
         speed=s_data['order_speed'],
         date=s_data.get("date", None),
         time=s_data['time'],
-        passenger_number=s_data['passenger_count'],
+        passenger_number=s_data['passengers_count'],
         car_class=s_data['car_class'],
     )
 
