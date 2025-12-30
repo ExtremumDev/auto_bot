@@ -133,7 +133,13 @@ async def approve_user_driver_form(c: types.CallbackQuery, db_session: AsyncSess
             try:
                 await c.bot.send_message(
                     chat_id=user.telegram_id,
-                    text="Ваша анкета водителя была одобрена администраторами",
+                    text="Ваша анкета водителя была одобрена администраторами. Теперь время добавить автомобиль",
+                    reply_markup=types.InlineKeyboardMarkup(
+                        inline_keyboard=[
+                            [types.InlineKeyboardButton(text="Добавить автомобиль", callback_data="add_car")],
+                            [types.InlineKeyboardButton(text="В главное меню", callback_data="main_menu")]
+                        ]
+                    )
                 )
             except TelegramBadRequest:
                 pass

@@ -17,7 +17,7 @@ async def start_order(c: types.CallbackQuery, state: FSMContext):
 
     match order_type:
         case OrderType.CROSS_CITY:
-            await state.set_state(CrossCityOrderFSM.speed_state)
+            await state.set_state(CrossCityOrderFSM.from_city_state)
 
             await c.message.answer(
                 "Укажите точку начала пути(город)"
