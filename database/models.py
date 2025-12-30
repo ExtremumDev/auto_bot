@@ -179,7 +179,7 @@ class Order(Base):
     delivery_order: Mapped["DeliveryOrder"] = relationship("DeliveryOrder", lazy="joined", back_populates="order")
 
     sober_driver_id: Mapped[int] = mapped_column(ForeignKey("sober_driver_orders.id"), nullable=True)
-    sober_driver: Mapped["SoberDriverOrder"] = relationship("SoberOrder", lazy="joined", back_populates="order")
+    sober_driver: Mapped["SoberDriverOrder"] = relationship("SoberDriverOrder", lazy="joined", back_populates="order")
 
     free_order_id: Mapped[int] = mapped_column(ForeignKey("free_orders.id"), nullable=True)
     free_order: Mapped["FreeOrder"] = relationship("FreeOrder", lazy="joined", back_populates="order")
