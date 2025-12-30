@@ -14,15 +14,21 @@ async def send_orders_list(c: types.CallbackQuery, db_session: AsyncSession, *ar
 
     if user.driver:
         if user.driver.is_moderated:
-            paging = OrdersPaging()
+            if user.cars:
+                paging = OrdersPaging()
 
-            await paging.get_queryset(db_session=db_session)
-            await paging.get_current_page()
+                await paging.get_queryset(db_session=db_session)
+                await paging.get_current_page()
 
-            await c.message.answer(
-                "Список заказов",
-                reply_markup=paging.get_reply_markup()
-            )
+                await c.message.answer(
+                    "Список заказов",
+                    reply_markup=paging.get_reply_markup()
+                )
+            else:
+                await c.answer(
+                    "Сначала необходимо зарегистрировать автомобиль",
+                    show_alert=True
+                )
             await c.answer()
         else:
             await c.answer(

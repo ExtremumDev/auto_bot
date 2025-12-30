@@ -1,9 +1,8 @@
 from typing import List
 
-from database.models import Car, Driver
 
 
-def get_user_profile_descr(is_drive: bool, is_drive_confirmed: bool, cars: List[Car]) -> str:
+def get_user_profile_descr(is_drive: bool, is_drive_confirmed: bool, cars: list) -> str:
     profile_descr = """Профиль пользователя:
 {drive_form}
 {drive_form_status}
@@ -19,7 +18,7 @@ def get_user_profile_descr(is_drive: bool, is_drive_confirmed: bool, cars: List[
     )
 
 
-def get_driver_form_text(driver: Driver):
+def get_driver_form_text(driver):
     return f"""
 ФИО: {driver.full_name}
 Номер телефона: {driver.phone_number}
