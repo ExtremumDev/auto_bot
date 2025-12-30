@@ -1,13 +1,15 @@
 import datetime
 from typing import List
 
+from sqlalchemy.dialects.mysql import TINYINT
 from sqlalchemy.orm import (
     DeclarativeBase, declared_attr, Mapped, mapped_column, relationship
 )
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy import BigInteger, func, String, Boolean, ForeignKey, Enum
 
-from utils.enums import CarClass, UserType
+from utils.enums import CarClass, UserType, OrderType
+from utils.text import get_cross_city_order_description
 
 
 class Base(AsyncAttrs, DeclarativeBase):
@@ -106,3 +108,98 @@ class CrossCityOrder(Base):
     passengers_number: Mapped[int] = mapped_column()
     car_class: Mapped[CarClass] = mapped_column(String(10))
 
+
+class PlaceOrder(Base):
+    settlement: Mapped[str] = mapped_column(String(100))
+    description: Mapped[str] = mapped_column(String(300))
+
+
+class DeliveryOrder(Base):
+    settlement: Mapped[str] = mapped_column(String(100))
+    description: Mapped[str] = mapped_column(String(300))
+
+
+class SoberDriverOrder(Base):
+    from_point: Mapped[str] = mapped_column(String(80))
+    destination_point: Mapped[str] = mapped_column(String(80))
+    description: Mapped[str] = mapped_column(String(200))
+
+
+class FreeOrder(Base):
+    description: Mapped[str] = mapped_column(String(100))
+
+
+class Order(Base):
+    order_type: Mapped[OrderType] = mapped_column(TINYINT)
+
+    creator_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
+    creator: Mapped["User"] = relationship("User", lazy="joined")
+
+    executor_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
+    executor: Mapped["User"] = relationship("User")
+
+    cross_city_id: Mapped[int] = mapped_column(ForeignKey("cross_city_orders"), nullable=True)
+    cross_city: Mapped["CrossCityOrder"] = relationship("CrossCityOrder", lazy="joined")
+
+    place_order_id: Mapped[int] = mapped_column(ForeignKey("place_orders.id"), nullable=True)
+    place_order: Mapped["PlaceOrder"] = relationship("CrossCityOrder", lazy="joined")
+
+    delivery_order_id: Mapped[int] = mapped_column(ForeignKey("delivery_orders.id"), nullable=True)
+    delivery_order: Mapped["DeliveryOrder"] = relationship("DeliveryOrder", lazy="joined")
+
+    sober_driver_id: Mapped[int] = mapped_column(ForeignKey("sober_driver_orders.id"), nullable=True)
+    sober_driver: Mapped["SoberDriverOrder"] = relationship("SoberOrder", lazy="joined")
+
+    free_order_id: Mapped[int] = mapped_column(ForeignKey("free_orders.id"), nullable=True)
+    free_order: Mapped["FreeOrder"] = relationship("FreeOrder", lazy="joined")
+
+    def get_order_name(self) -> str:
+        match self.order_type:
+            case OrderType.CROSS_CITY:
+                return f"{self.cross_city.from_city} - {self.cross_city.destination_city}"
+            case OrderType.CITY:
+                return f"По городу: {self.place_order.settlement}"
+            case OrderType.DELIVERY:
+                return f"Доставка: {self.delivery_order.settlement}"
+            case OrderType.SOBER_DRIVER:
+                return "Трезвый водитель"
+            case _:
+                return "Заказ"
+
+    def get_description(self) -> str:
+        match self.order_type:
+            case OrderType.CROSS_CITY:
+                return get_cross_city_order_description(
+                    from_city=self.cross_city.from_city,
+                    from_add=self.cross_city.from_add,
+                    dest_city=self.cross_city.destination_city,
+                    dest_add=self.cross_city.destination_add,
+                    intermediate_points=self.cross_city.intermediate_points,
+                    passengers_number=self.cross_city.passengers_number
+                )
+            case OrderType.CITY:
+                return f"""
+Заказ по городу
+
+Город: {self.place_order.settlement}
+
+Описание: {self.place_order.description}
+"""
+            case OrderType.DELIVERY:
+                return f"""
+Доставка
+
+Город: {self.delivery_order.settlement}
+Описание: {self.delivery_order.description}
+"""
+            case OrderType.SOBER_DRIVER:
+                return f"""
+Трезвый водитель
+
+Откуда: {self.sober_driver.from_point}
+Куда: {self.sober_driver.destination_point}
+
+Описание: {self.sober_driver.description}
+"""
+            case _:
+                return "Заказ"

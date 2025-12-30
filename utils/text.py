@@ -31,6 +31,18 @@ def get_driver_form_text(driver: Driver):
 Водительские права: {driver.license_number}
 """
 
+def get_cross_city_order_description(from_city, from_add, dest_city, dest_add, intermediate_points, passengers_number):
+    return f"""
+Заказ между городами.
+
+Откуда: {from_city}, {from_add}
+Куда: {dest_city}, {dest_add}
+
+Промежуточные точки: {intermediate_points}
+
+Число пассажиров - {passengers_number}
+"""
+
 
 main_menu_message = """
 Открыто главное меню

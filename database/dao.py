@@ -7,7 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import select, asc, update
 from sqlalchemy.orm import joinedload, selectinload
 
-from .models import User, Driver, Car, CrossCityOrder
+from utils.enums import OrderType
+from .models import User, Driver, Car, CrossCityOrder, Order, PlaceOrder, DeliveryOrder, SoberDriverOrder, FreeOrder
 
 
 class BaseDAO:
@@ -113,5 +114,50 @@ class CarDAO(BaseDAO):
     model = Car
 
 
-class CrossCityOrderDAO(BaseDAO):
-    model = CrossCityOrder
+class OrderDAO(BaseDAO):
+    model = Order
+
+    @classmethod
+    async def add_order(cls, session: AsyncSession, order_type: OrderType, **order_kwargs):
+
+        order = Order(order_type=order_type)
+
+        order_class = None
+        order_key = None
+
+        match order_type:
+            case OrderType.CROSS_CITY:
+                order_class = CrossCityOrder
+                order_key = "cross_city"
+            case OrderType.CITY:
+                order_class = PlaceOrder
+                order_key = "place_order"
+            case OrderType.DELIVERY:
+                order_class = DeliveryOrder
+                order_key = "delivery_order"
+            case OrderType.SOBER_DRIVER:
+                order_class = SoberDriverOrder
+                order_key = "sober_driver"
+            case OrderType.FREE_ORDER:
+                order_class = FreeOrder
+                order_key = "free_order"
+
+        sub_order = order_class(**order_kwargs)
+
+        await session.flush()
+        await session.refresh(sub_order)
+
+        order.__setattr__(order_key, sub_order)
+
+        await session.commit()
+
+        return order
+
+    @classmethod
+    async def get_active_orders(cls, session: AsyncSession, *args) -> Sequence[Order]:
+        query = select(Order).filter_by()
+
+        res = await session.execute(query)
+
+        return res.scalars().all()
+

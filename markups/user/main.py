@@ -8,6 +8,7 @@ def get_main_markup(user_id: int):
         inline_keyboard=[
             [InlineKeyboardButton(text="Мой профиль", callback_data="my_profile")],
             [InlineKeyboardButton(text="Создать заказ", callback_data="new_order")],
+            [InlineKeyboardButton(text="Активные заказы", callback_data="active_orders")],
             [InlineKeyboardButton(text="ПРАВИЛА", callback_data="rules")],
             [InlineKeyboardButton(text="Образцы оформления заказов", callback_data="orders_rules")]
         ]

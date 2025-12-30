@@ -1,5 +1,14 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+
+def get_accept_order_markup(order_id: int):
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Принять заказ", callback_data=f"acceptorder_{order_id}")]
+        ]
+    )
+
+
 order_type_markup = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(text="Межгород", callback_data="ordertype_1")],
