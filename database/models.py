@@ -48,6 +48,9 @@ class User(Base):
         back_populates="user"
     )
 
+    created_orders: Mapped[List["Order"]] = relationship("Order", back_populates="creator")
+    orders: Mapped[List["Order"]] = relationship("Order", back_populates="executor")
+
 
 class Driver(Base):
     user_id: Mapped[int] = mapped_column(nullable=True)
@@ -108,15 +111,21 @@ class CrossCityOrder(Base):
     passengers_number: Mapped[int] = mapped_column()
     car_class: Mapped[CarClass] = mapped_column(String(10))
 
+    order: Mapped["Order"] = relationship("Order", back_populates="cross_city")
+
 
 class PlaceOrder(Base):
     settlement: Mapped[str] = mapped_column(String(100))
     description: Mapped[str] = mapped_column(String(300))
 
+    order: Mapped["Order"] = relationship("Order", back_populates="place_order")
+
 
 class DeliveryOrder(Base):
     settlement: Mapped[str] = mapped_column(String(100))
     description: Mapped[str] = mapped_column(String(300))
+
+    order: Mapped["Order"] = relationship("Order", back_populates="delivery_order")
 
 
 class SoberDriverOrder(Base):
@@ -124,34 +133,39 @@ class SoberDriverOrder(Base):
     destination_point: Mapped[str] = mapped_column(String(80))
     description: Mapped[str] = mapped_column(String(200))
 
+    order: Mapped["Order"] = relationship("Order", back_populates="sober_driver")
+
+
 
 class FreeOrder(Base):
     description: Mapped[str] = mapped_column(String(100))
+
+    order: Mapped["Order"] = relationship("Order", back_populates="free_order")
 
 
 class Order(Base):
     order_type: Mapped[OrderType] = mapped_column(TINYINT)
 
     creator_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
-    creator: Mapped["User"] = relationship("User", lazy="joined")
+    creator: Mapped["User"] = relationship("User", lazy="joined", back_populates="created_orders")
 
     executor_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
-    executor: Mapped["User"] = relationship("User")
+    executor: Mapped["User"] = relationship("User", back_populates="orders")
 
     cross_city_id: Mapped[int] = mapped_column(ForeignKey("cross_city_orders.id"), nullable=True)
-    cross_city: Mapped["CrossCityOrder"] = relationship("CrossCityOrder", lazy="joined")
+    cross_city: Mapped["CrossCityOrder"] = relationship("CrossCityOrder", lazy="joined", back_populates="order")
 
     place_order_id: Mapped[int] = mapped_column(ForeignKey("place_orders.id"), nullable=True)
-    place_order: Mapped["PlaceOrder"] = relationship("CrossCityOrder", lazy="joined")
+    place_order: Mapped["PlaceOrder"] = relationship("CrossCityOrder", lazy="joined", back_populates="order")
 
     delivery_order_id: Mapped[int] = mapped_column(ForeignKey("delivery_orders.id"), nullable=True)
-    delivery_order: Mapped["DeliveryOrder"] = relationship("DeliveryOrder", lazy="joined")
+    delivery_order: Mapped["DeliveryOrder"] = relationship("DeliveryOrder", lazy="joined", back_populates="order")
 
     sober_driver_id: Mapped[int] = mapped_column(ForeignKey("sober_driver_orders.id"), nullable=True)
-    sober_driver: Mapped["SoberDriverOrder"] = relationship("SoberOrder", lazy="joined")
+    sober_driver: Mapped["SoberDriverOrder"] = relationship("SoberOrder", lazy="joined", back_populates="order")
 
     free_order_id: Mapped[int] = mapped_column(ForeignKey("free_orders.id"), nullable=True)
-    free_order: Mapped["FreeOrder"] = relationship("FreeOrder", lazy="joined")
+    free_order: Mapped["FreeOrder"] = relationship("FreeOrder", lazy="joined", back_populates="order")
 
     def get_order_name(self) -> str:
         match self.order_type:
