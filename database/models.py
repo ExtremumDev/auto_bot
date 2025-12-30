@@ -147,10 +147,19 @@ class Order(Base):
     order_type: Mapped[OrderType] = mapped_column(TINYINT)
 
     creator_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
-    creator: Mapped["User"] = relationship("User", lazy="joined", back_populates="created_orders")
+    creator: Mapped["User"] = relationship(
+        "User",
+        lazy="joined",
+        back_populates="created_orders",
+        foreign_keys=[creator_id]
+    )
 
     executor_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
-    executor: Mapped["User"] = relationship("User", back_populates="orders")
+    executor: Mapped["User"] = relationship(
+        "User",
+        back_populates="orders",
+        foreign_keys=[executor_id]
+    )
 
     cross_city_id: Mapped[int] = mapped_column(ForeignKey("cross_city_orders.id"), nullable=True)
     cross_city: Mapped["CrossCityOrder"] = relationship("CrossCityOrder", lazy="joined", back_populates="order")
