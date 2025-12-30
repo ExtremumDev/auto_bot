@@ -173,7 +173,7 @@ class Order(Base):
     cross_city: Mapped["CrossCityOrder"] = relationship("CrossCityOrder", lazy="joined", back_populates="order")
 
     place_order_id: Mapped[int] = mapped_column(ForeignKey("place_orders.id"), nullable=True)
-    place_order: Mapped["PlaceOrder"] = relationship("CrossCityOrder", lazy="joined", back_populates="order")
+    place_order: Mapped["PlaceOrder"] = relationship("PlaceOrder", lazy="joined", back_populates="order")
 
     delivery_order_id: Mapped[int] = mapped_column(ForeignKey("delivery_orders.id"), nullable=True)
     delivery_order: Mapped["DeliveryOrder"] = relationship("DeliveryOrder", lazy="joined", back_populates="order")
