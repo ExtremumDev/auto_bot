@@ -48,8 +48,16 @@ class User(Base):
         back_populates="user"
     )
 
-    created_orders: Mapped[List["Order"]] = relationship("Order", back_populates="creator")
-    orders: Mapped[List["Order"]] = relationship("Order", back_populates="executor")
+    created_orders: Mapped[List["Order"]] = relationship(
+        "Order",
+        back_populates="creator",
+        foreign_keys="[Order.creator_id]"
+    )
+    orders: Mapped[List["Order"]] = relationship(
+        "Order",
+        back_populates="executor",
+        foreign_keys="[Order.executor_id]"
+    )
 
 
 class Driver(Base):
