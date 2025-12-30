@@ -138,7 +138,7 @@ class Order(Base):
     executor_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
     executor: Mapped["User"] = relationship("User")
 
-    cross_city_id: Mapped[int] = mapped_column(ForeignKey("cross_city_orders"), nullable=True)
+    cross_city_id: Mapped[int] = mapped_column(ForeignKey("cross_city_orders.id"), nullable=True)
     cross_city: Mapped["CrossCityOrder"] = relationship("CrossCityOrder", lazy="joined")
 
     place_order_id: Mapped[int] = mapped_column(ForeignKey("place_orders.id"), nullable=True)
