@@ -141,7 +141,7 @@ async def handle_car_class(c: types.CallbackQuery, state: FSMContext, db_session
         order_type=OrderType.CROSS_CITY,
         from_city=s_data["from_city"],
         from_add=s_data["from_add"],
-        destionation_city=s_data["dest_city"],
+        destination_city=s_data["dest_city"],
         destination_add=s_data["dest_add"],
         intermediate_points=s_data["intermediate_points"],
         speed=s_data['order_speed'],
