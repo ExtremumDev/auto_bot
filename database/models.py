@@ -94,7 +94,7 @@ class Car(Base):
     sts_series: Mapped[str] = mapped_column(String(15), nullable=True)
     sts_number: Mapped[str] = mapped_column(String(15))
 
-    car_class: Mapped[CarClass] = mapped_column(String(10), default=CarClass.BASE_CAR, nullable=False)
+    car_class: Mapped[CarClass] = mapped_column(String(20), default=CarClass.BASE_CAR, nullable=True)
 
     photo: Mapped[str] = mapped_column(String(100))
     video: Mapped[str] = mapped_column(String(100), nullable=True)
@@ -117,7 +117,7 @@ class CrossCityOrder(Base):
     time: Mapped[str] = mapped_column(String(20))
 
     passengers_number: Mapped[int] = mapped_column()
-    car_class: Mapped[CarClass] = mapped_column(String(10))
+    car_class: Mapped[CarClass] = mapped_column(String(20), nullable=True)
 
     order: Mapped["Order"] = relationship("Order", back_populates="cross_city")
 
