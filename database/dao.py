@@ -121,6 +121,7 @@ class OrderDAO(BaseDAO):
     async def add_order(cls, session: AsyncSession, order_type: OrderType, creator_id: int, **order_kwargs):
 
         order = Order(order_type=order_type)
+        session.add(order)
 
         order_class = None
         order_key = None
