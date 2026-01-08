@@ -120,7 +120,7 @@ class OrderDAO(BaseDAO):
     @classmethod
     async def add_order(cls, session: AsyncSession, order_type: OrderType, creator_id: int, **order_kwargs):
 
-        order = Order(order_type=order_type)
+        order = Order(order_type=order_type.value)
         session.add(order)
 
         order_class = None
