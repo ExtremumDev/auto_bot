@@ -144,6 +144,7 @@ class OrderDAO(BaseDAO):
                 order_key = "free_order"
 
         sub_order = order_class(**order_kwargs)
+        session.add(sub_order)
 
         await session.flush()
         await session.refresh(sub_order)
