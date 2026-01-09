@@ -17,6 +17,14 @@ class CrossCityOrderFSM(StatesGroup):
 
     intermediate_points_state = State()
 
+    nt_distance_state = State()
+    nt_price_state = State()
+
+    rf_distance_state = State()
+    rf_price_state = State()
+
+    toll_road_state = State()
+
 
 class PlaceOrderFSM(StatesGroup):
     settlement_state = State()

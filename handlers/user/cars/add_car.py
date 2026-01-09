@@ -115,7 +115,7 @@ async def handle_car_photo(m: types.Message, state: FSMContext):
         await state.update_data(car_photo=file_name)
 
         await m.answer(
-            "Приишлите видеособщение"
+            "Пришлите  единый видеокружок, где видно Вас, водительское удостоверение, СТС на фоне автомобиля с госномером"
         )
 
 
