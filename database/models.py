@@ -200,9 +200,7 @@ class Order(Base):
             case OrderType.CROSS_CITY:
                 return get_cross_city_order_description(
                     from_city=self.cross_city.from_city,
-                    from_add=self.cross_city.from_add,
                     dest_city=self.cross_city.destination_city,
-                    dest_add=self.cross_city.destination_add,
                     intermediate_points=self.cross_city.intermediate_points,
                     passengers_number=self.cross_city.passengers_number
                 )

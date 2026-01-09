@@ -30,12 +30,12 @@ def get_driver_form_text(driver):
 Водительские права: {driver.license_number}
 """
 
-def get_cross_city_order_description(from_city, from_add, dest_city, dest_add, intermediate_points, passengers_number):
+def get_cross_city_order_description(from_city, dest_city, intermediate_points, passengers_number):
     return f"""
 Заказ между городами.
 
-Откуда: {from_city}, {from_add}
-Куда: {dest_city}, {dest_add}
+Откуда: {from_city}
+Куда: {dest_city}
 
 Промежуточные точки: {intermediate_points}
 
