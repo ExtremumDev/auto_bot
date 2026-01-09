@@ -90,9 +90,9 @@ class Car(Base):
 
     release_year: Mapped[int] = mapped_column()
 
-    car_number: Mapped[str] = mapped_column(String(10))
-    sts_series: Mapped[str] = mapped_column(String(15), nullable=True)
-    sts_number: Mapped[str] = mapped_column(String(15))
+    car_number: Mapped[str] = mapped_column(String(30))
+    sts_series: Mapped[str] = mapped_column(String(30), nullable=True)
+    sts_number: Mapped[str] = mapped_column(String(50))
 
     car_class: Mapped[CarClass] = mapped_column(String(20), default=CarClass.BASE_CAR, nullable=True)
 
@@ -104,11 +104,9 @@ class Car(Base):
 
 
 class CrossCityOrder(Base):
-    from_city: Mapped[str] = mapped_column(String(50))
-    from_add: Mapped[str] = mapped_column(String(100))
+    from_city: Mapped[str] = mapped_column(String(150))
 
-    destination_city: Mapped[str] = mapped_column(String(50))
-    destination_add: Mapped[str] = mapped_column(String(100))
+    destination_city: Mapped[str] = mapped_column(String(150))
 
     intermediate_points: Mapped[str] = mapped_column(String(100))
 

@@ -1,4 +1,5 @@
 from aiogram import types, Dispatcher, F
+from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 
 from config import RulesData
@@ -6,15 +7,20 @@ from markups.user.main import get_main_markup
 from utils.text import main_menu_message
 
 
-async def to_main_menu(c: types.CallbackQuery, state: FSMContext):
-    await state.clear()
+async def to_main_menu_callback(c: types.CallbackQuery, state: FSMContext):
 
-    await c.message.answer(
-        main_menu_message,
-        reply_markup=get_main_markup(c.from_user.id)
-    )
+    await to_main_menu(c.message, state)
 
     await c.answer()
+
+
+async def to_main_menu(m: types.Message, state: FSMContext):
+    await state.clear()
+
+    await m.answer(
+        main_menu_message,
+        reply_markup=get_main_markup(m.from_user.id)
+    )
 
 
 async def send_rules(c: types.CallbackQuery):
@@ -25,5 +31,6 @@ async def send_rules(c: types.CallbackQuery):
 
 
 def register_main_handlers(dp: Dispatcher):
-    dp.callback_query.register(to_main_menu, F.data == "main_menu")
+    dp.callback_query.register(to_main_menu_callback, F.data == "main_menu", StateFilter('*'))
+    dp.message.register(to_main_menu, Command("menu"), StateFilter('*'))
     dp.callback_query.register(send_rules, F.data == "rules")

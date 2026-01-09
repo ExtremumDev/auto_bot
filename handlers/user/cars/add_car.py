@@ -75,7 +75,7 @@ async def handle_car_number(m: types.Message, state: FSMContext):
     # verification
 
     await state.set_state(AddingCarFSM.sts_state)
-    await state.update_data(car_number=m.text)
+    await state.update_data(car_number=m.text[:29])
 
     await m.answer(
         "Введите серию и номер своего СТС РФ через пробел"
@@ -86,7 +86,7 @@ async def handle_sts(m: types.Message, state: FSMContext):
     # verification
 
     await state.set_state(AddingCarFSM.car_class_state)
-    await state.update_data(sts_number=m.text)
+    await state.update_data(sts_number=m.text[:49])
 
     await m.answer(
         "Выберите класс вашего автомобиля:\n",

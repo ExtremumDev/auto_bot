@@ -3,11 +3,9 @@ from aiogram.fsm.state import State, StatesGroup
 
 class CrossCityOrderFSM(StatesGroup):
 
-    from_city_state = State()
-    from_add_state = State()
+    from_state = State()
 
-    dest_city_state = State()
-    dest_add_state = State()
+    destination_state = State()
 
     speed_state = State()
     date_state = State()

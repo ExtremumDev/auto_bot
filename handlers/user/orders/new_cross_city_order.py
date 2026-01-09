@@ -17,46 +17,30 @@ async def start_order(c: types.CallbackQuery, state: FSMContext):
 
     match order_type:
         case OrderType.CROSS_CITY:
-            await state.set_state(CrossCityOrderFSM.from_city_state)
+            await state.set_state(CrossCityOrderFSM.from_state)
 
             await c.message.answer(
-                "Укажите точку начала пути(город)"
+                "Укажите название населённого пункта начала пути и по возможноси, район(улицу, координаты)"
             )
 
     await c.answer()
 
-async def handle_from_city(m: types.Message, state: FSMContext):
-    await state.set_state(CrossCityOrderFSM.from_add_state)
+
+async def handle_from(m: types.Message, state: FSMContext):
+    await state.set_state(CrossCityOrderFSM.destination_state)
     await state.update_data(from_city=m.text.strip())
 
     await m.answer(
-        "Добавьте комментарий про точку начала(адрес, координаты и т.д.)"
+        "Укажите название населённого пункта назначения и по возможноси, район(улицу, координаты)"
     )
 
 
-async def handle_from_additional(m: types.Message, state: FSMContext):
-    await state.set_state(CrossCityOrderFSM.dest_city_state)
-    await state.update_data(from_add=m.text.strip())
-
-    await m.answer(
-        "Укажите пункт назначения(город)"
-    )
-
-async def handle_dest_city(m: types.Message, state: FSMContext):
-    await state.set_state(CrossCityOrderFSM.dest_add_state)
+async def handle_destination(m: types.Message, state: FSMContext):
+    await state.set_state(CrossCityOrderFSM.intermediate_points_state)
     await state.update_data(dest_city=m.text.strip())
 
     await m.answer(
-        "Добавьте комментарий про точку назначения(адрес, координаты и т.д.)"
-    )
-
-
-async def handle_dest_additional(m: types.Message, state: FSMContext):
-    await state.set_state(CrossCityOrderFSM.intermediate_points_state)
-    await state.update_data(dest_add=m.text.strip())
-
-    await m.answer(
-        "Укажите дополнительные промежуточные точки маршрута(необязательно)"
+        "Укажите дополнительные промежуточные точки маршрута или напишите \"Нет\""
     )
 
 
@@ -140,9 +124,7 @@ async def handle_car_class(c: types.CallbackQuery, state: FSMContext, db_session
         session=db_session,
         order_type=OrderType.CROSS_CITY,
         from_city=s_data["from_city"],
-        from_add=s_data["from_add"],
         destination_city=s_data["dest_city"],
-        destination_add=s_data["dest_add"],
         intermediate_points=s_data["intermediate_points"],
         speed=s_data['order_speed'],
         date=s_data.get("date", None),
@@ -162,10 +144,8 @@ async def handle_car_class(c: types.CallbackQuery, state: FSMContext, db_session
 def register_new_cross_city_order_handlers(dp: Dispatcher):
 
     dp.callback_query.register(start_order, F.data == "ordertype_1")
-    dp.message.register(handle_from_city, StateFilter(CrossCityOrderFSM.from_city_state))
-    dp.message.register(handle_from_additional, StateFilter(CrossCityOrderFSM.from_add_state))
-    dp.message.register(handle_dest_city, StateFilter(CrossCityOrderFSM.dest_city_state))
-    dp.message.register(handle_dest_additional, StateFilter(CrossCityOrderFSM.dest_add_state))
+    dp.message.register(handle_from, StateFilter(CrossCityOrderFSM.from_state))
+    dp.message.register(handle_destination, StateFilter(CrossCityOrderFSM.destination_state))
     dp.message.register(handle_intermediate_points, StateFilter(CrossCityOrderFSM.intermediate_points_state))
     dp.callback_query.register(
         handle_order_speed,
