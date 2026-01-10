@@ -120,10 +120,10 @@ class CrossCityOrder(Base):
     order: Mapped["Order"] = relationship("Order", back_populates="cross_city")
 
     new_territory_distance: Mapped[int] = mapped_column(default=0, server_default="0")
-    new_territory_price: Mapped[int] = mapped_column(default=0, server_default="0")
     rf_distance: Mapped[int] = mapped_column(default=0, server_default="0")
-    rf_price: Mapped[int] = mapped_column(default=0, server_default="0")
-    toll_road_price: Mapped[int] = mapped_column(default=0, server_default="0")
+
+    price: Mapped[int] = mapped_column(default=0, server_default="0")
+    description: Mapped[str] = mapped_column(String(100), default="")
 
 
 class PlaceOrder(Base):
@@ -191,7 +191,7 @@ class Order(Base):
     def get_order_name(self) -> str:
         match self.order_type:
             case OrderType.CROSS_CITY:
-                return f"{self.price} руб {self.cross_city.from_city} - {self.cross_city.destination_city}"
+                return f"{self.cross_city.price} руб {self.cross_city.from_city} - {self.cross_city.destination_city}"
             case OrderType.CITY:
                 return f"По городу: {self.place_order.settlement}"
             case OrderType.DELIVERY:
@@ -210,7 +210,9 @@ class Order(Base):
                     intermediate_points=self.cross_city.intermediate_points,
                     passengers_number=self.cross_city.passengers_number,
                     nt_distance=self.cross_city.new_territory_distance,
-                    rf_distance=self.cross_city.rf_distance
+                    rf_distance=self.cross_city.rf_distance,
+                    price=self.cross_city.price,
+                    description=self.cross_city.description
                 )
             case OrderType.CITY:
                 return f"""
@@ -238,10 +240,3 @@ class Order(Base):
 """
             case _:
                 return "Заказ"
-
-    @property
-    def price(self):
-        if self.order_type == OrderType.CROSS_CITY:
-            return self.cross_city.new_territory_distance * self.cross_city.new_territory_price + self.cross_city.rf_distance * self.cross_city.rf_price
-        else:
-            return 0

@@ -123,7 +123,7 @@ async def handle_drive_exp(m: types.Message, state: FSMContext):
         await state.update_data(drive_exp=drive_exp)
 
         await m.answer(
-            "Теперь заполните данные о водительских праваз РФ. Введите серию и номер документа через пробел",
+            "Теперь заполните данные о водительских правах РФ. Введите серию и номер документа через пробел",
         )
     except ValueError:
         await m.answer("Необходимо ввести число! Попробуйте еще раз")

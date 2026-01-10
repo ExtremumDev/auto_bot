@@ -30,7 +30,9 @@ def get_driver_form_text(driver):
 Водительские права: {driver.license_number}
 """
 
-def get_cross_city_order_description(from_city, dest_city, intermediate_points, passengers_number, nt_distance, rf_distance):
+def get_cross_city_order_description(
+        from_city, dest_city, intermediate_points, passengers_number, nt_distance, rf_distance, price, description
+):
     return f"""
 Заказ между городами.
 
@@ -41,8 +43,12 @@ def get_cross_city_order_description(from_city, dest_city, intermediate_points, 
 
 Число пассажиров - {passengers_number}
 
-Километраж по НТ(новые территории) - {nt_distance}
-Километраж по РФ - {rf_distance}
+Километраж по НТ(новые территории) - {nt_distance} км
+Километраж по РФ - {rf_distance} км
+
+{price} руб. на руки
+
+Описание: {description}
 """
 
 

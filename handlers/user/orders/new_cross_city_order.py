@@ -20,7 +20,7 @@ async def start_order(c: types.CallbackQuery, state: FSMContext):
             await state.set_state(CrossCityOrderFSM.from_state)
 
             await c.message.answer(
-                "Укажите название населённого пункта начала пути и по возможноси, район(улицу, координаты)"
+                "Укажите название населённого пункта начала пути и по возможности, район(улицу, координаты)"
             )
 
     await c.answer()
@@ -31,7 +31,7 @@ async def handle_from(m: types.Message, state: FSMContext):
     await state.update_data(from_city=m.text.strip())
 
     await m.answer(
-        "Укажите название населённого пункта назначения и по возможноси, район(улицу, координаты)"
+        "Укажите название населённого пункта назначения и по возможности, район(улицу, координаты)"
     )
 
 
@@ -116,7 +116,7 @@ async def handle_car_class(c: types.CallbackQuery, state: FSMContext):
     await state.update_data(car_class=CarClass(car_class_id))
 
     await c.message.answer(
-        "Введите километрад по НТ(новые территории), если нет - 0"
+        "Введите километраж по НТ(новые территории), если нет - 0"
     )
 
     await c.answer()
@@ -126,28 +126,6 @@ async def handle_new_territory_distance(m: types.Message, state: FSMContext):
     try:
         distance = int(m.text)
         await state.update_data(nt_distance=distance)
-
-        if distance:
-            await state.set_state(CrossCityOrderFSM.nt_price_state)
-            await m.answer(
-                "Укажите цену за километр по НТ"
-            )
-        else:
-            await state.set_state(CrossCityOrderFSM.rf_distance_state)
-            await m.answer(
-                "Укажите километраж по РФ, если нет - введите 0"
-            )
-
-    except ValueError:
-        await m.answer(
-            "Необходимо ввести число! Попробуйте еще раз"
-        )
-
-
-async def handle_new_territory_price(m: types.Message, state: FSMContext):
-    try:
-        price = int(m.text)
-        await state.update_data(nt_price=price)
 
         await state.set_state(CrossCityOrderFSM.rf_distance_state)
         await m.answer(
@@ -164,76 +142,65 @@ async def handle_rf_distance(m: types.Message, state: FSMContext):
         distance = int(m.text)
         await state.update_data(rf_distance=distance)
 
-        if distance:
-            await state.set_state(CrossCityOrderFSM.nt_price_state)
-            await m.answer(
-                "Укажите цену за километр по РФ"
-            )
-        else:
-            await state.set_state(CrossCityOrderFSM.toll_road_state)
-            await m.answer(
-                "Введите стоимость платных дорог, если нет - введите 0"
-            )
+        await state.set_state(CrossCityOrderFSM.price_state)
+        await m.answer(
+            "Введите цену за поездку"
+        )
 
     except ValueError:
         await m.answer(
             "Необходимо ввести число! Попробуйте еще раз"
         )
 
-async def handle_rf_price(m: types.Message, state: FSMContext):
+
+
+async def handle_price(m: types.Message, state: FSMContext):
     try:
         price = int(m.text)
-        await state.update_data(rf_price=price)
+        await state.update_data(price=price)
 
-        await state.set_state(CrossCityOrderFSM.toll_road_state)
+        await state.set_state(CrossCityOrderFSM.description_state)
         await m.answer(
-            "Введите стоимость платных дорог, если нет - введите 0"
+            "Введите свободный комментарий о поездке"
         )
 
     except ValueError:
         await m.answer(
             "Необходимо ввести число! Попробуйте еще раз"
         )
+
 
 
 @connection
-async def handle_toll_road_price(m: types.Message, state: FSMContext, db_session: AsyncSession, *args):
-    try:
-        price = int(m.text)
-        await state.update_data(toll_road_price=price)
+async def handle_description(m: types.Message, state: FSMContext, db_session: AsyncSession, *args):
+    await state.update_data(description=m.text[:99])
 
-        s_data = await state.get_data()
-        await state.clear()
+    s_data = await state.get_data()
+    await state.clear()
 
-        user = await UserDAO.get_obj(session=db_session, telegram_id=m.from_user.id)
+    user = await UserDAO.get_obj(session=db_session, telegram_id=m.from_user.id)
 
-        order = await OrderDAO.add_order(
-            creator_id=user.id,
-            session=db_session,
-            order_type=OrderType.CROSS_CITY,
-            from_city=s_data["from_city"],
-            destination_city=s_data["dest_city"],
-            intermediate_points=s_data["intermediate_points"],
-            speed=s_data['order_speed'],
-            date=s_data.get("date", None),
-            time=s_data['time'],
-            passengers_number=s_data['passengers_count'],
-            car_class=s_data['car_class'],
-            new_territory_distance=s_data["nt_distance"],
-            new_territory_price=s_data["nt_price"],
-            rf_distance=s_data["rf_distance"],
-            rf_price=s_data["rf_price"],
-            toll_road_price=s_data["toll_road_price"],
-        )
+    order = await OrderDAO.add_order(
+        creator_id=user.id,
+        session=db_session,
+        order_type=OrderType.CROSS_CITY,
+        from_city=s_data["from_city"],
+        destination_city=s_data["dest_city"],
+        intermediate_points=s_data["intermediate_points"],
+        speed=s_data['order_speed'],
+        date=s_data.get("date", None),
+        time=s_data['time'],
+        passengers_number=s_data['passengers_count'],
+        car_class=s_data['car_class'],
+        new_territory_distance=s_data["nt_distance"],
+        rf_distance=s_data["rf_distance"],
+        price=s_data["price"],
+        description=s_data["description"]
+    )
 
-        await m.answer(
-            "Заказ успешно опубликован!"
-        )
-
-    except ValueError:
-        await m.answer(
-            "Необходимо ввести число! Попробуйте еще раз"
-        )
+    await m.answer(
+        "Заказ успешно опубликован!"
+    )
 
 
 
@@ -258,8 +225,7 @@ def register_new_cross_city_order_handlers(dp: Dispatcher):
     )
 
     dp.message.register(handle_new_territory_distance, StateFilter(CrossCityOrderFSM.nt_distance_state))
-    dp.message.register(handle_new_territory_price, StateFilter(CrossCityOrderFSM.nt_price_state))
     dp.message.register(handle_rf_distance, StateFilter(CrossCityOrderFSM.rf_distance_state))
-    dp.message.register(handle_rf_price, StateFilter(CrossCityOrderFSM.rf_price_state))
-    dp.message.register(handle_toll_road_price, StateFilter(CrossCityOrderFSM.toll_road_state))
+    dp.message.register(handle_price, StateFilter(CrossCityOrderFSM.price_state))
+    dp.message.register(handle_description, StateFilter(CrossCityOrderFSM.description_state))
 
