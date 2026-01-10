@@ -122,7 +122,6 @@ class CrossCityOrder(Base):
     new_territory_distance: Mapped[int] = mapped_column(default=0, server_default="0")
     rf_distance: Mapped[int] = mapped_column(default=0, server_default="0")
 
-    price: Mapped[int] = mapped_column(default=0, server_default="0")
     description: Mapped[str] = mapped_column(String(100), default="")
 
 
@@ -157,6 +156,7 @@ class FreeOrder(Base):
 
 class Order(Base):
     order_type: Mapped[OrderType] = mapped_column(TINYINT)
+    price: Mapped[int] = mapped_column(default=0, server_default="0")
 
     creator_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
     creator: Mapped["User"] = relationship(
@@ -191,7 +191,7 @@ class Order(Base):
     def get_order_name(self) -> str:
         match self.order_type:
             case OrderType.CROSS_CITY:
-                return f"{self.cross_city.price} руб {self.cross_city.from_city} - {self.cross_city.destination_city}"
+                return f"{self.price} руб {self.cross_city.from_city} - {self.cross_city.destination_city}"
             case OrderType.CITY:
                 return f"По городу: {self.place_order.settlement}"
             case OrderType.DELIVERY:
@@ -211,7 +211,7 @@ class Order(Base):
                     passengers_number=self.cross_city.passengers_number,
                     nt_distance=self.cross_city.new_territory_distance,
                     rf_distance=self.cross_city.rf_distance,
-                    price=self.cross_city.price,
+                    price=self.price,
                     description=self.cross_city.description
                 )
             case OrderType.CITY:

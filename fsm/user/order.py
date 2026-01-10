@@ -26,6 +26,7 @@ class CrossCityOrderFSM(StatesGroup):
 
 class PlaceOrderFSM(StatesGroup):
     settlement_state = State()
+    price_state = State()
     description_state = State()
 
 
@@ -36,4 +37,5 @@ class DeliveryOrderFSM(PlaceOrderFSM):
 class SoberDriverFSM(StatesGroup):
     from_state = State()
     dest_state = State()
+    price_state = State()
     description_state = State()
