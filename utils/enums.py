@@ -49,3 +49,5 @@ class OrderType(int, Enum):
 
 class OrderStatus(int, Enum):
     SEARCHING = 0
+    ACCEPTED = 1
+    FINISHED = 2

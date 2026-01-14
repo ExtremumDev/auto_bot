@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.dao import OrderDAO, UserDAO
 from database.utils import connection
 from markups.user.order import get_accept_order_markup
+from utils.enums import OrderStatus
 from utils.paging.orders_paging import OrdersPaging
 
 
@@ -78,16 +79,21 @@ async def accept_order(c: types.CallbackQuery, db_session: AsyncSession, *args):
             user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
 
             order.executor = user
+            order.order_status = OrderStatus.ACCEPTED
             await db_session.commit()
 
             await c.message.answer(
-                "Заказ был успешно принят"
+                f"Заказ был успешно принят. Чат с создателем заказа @{order.creator.telegram_username}"
             )
 
             try:
                 await c.bot.send_message(
                     chat_id=order.creator.telegram_id,
-                    text="Ваш заказ был принят!"
+                    text=f"Ваш заказ был принят пользлвателем @{user.telegram_username}\n\nИнформация по заказу👇"
+                )
+                await c.bot.send_message(
+                    chat_id=order.creator.telegram_id,
+                    text=order.get_description()
                 )
             except TelegramBadRequest:
                 pass
