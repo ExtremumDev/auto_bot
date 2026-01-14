@@ -118,9 +118,12 @@ class OrderDAO(BaseDAO):
     model = Order
 
     @classmethod
-    async def add_order(cls, session: AsyncSession, order_type: OrderType, creator_id: int, price: int, **order_kwargs):
+    async def add_order(
+            cls, session: AsyncSession, order_type: OrderType, creator_id: int, price: int, date: str,
+            **order_kwargs
+    ):
 
-        order = Order(order_type=order_type.value, creator_id=creator_id, price=price)
+        order = Order(order_type=order_type.value, creator_id=creator_id, price=price, date=date)
         session.add(order)
 
         order_class = None

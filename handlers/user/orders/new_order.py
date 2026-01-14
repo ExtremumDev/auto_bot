@@ -40,16 +40,26 @@ async def handle_city_settlement(m: types.Message, state: FSMContext):
 async def handle_city_price(m: types.Message, state: FSMContext):
     try:
         price = int(m.text)
-        await state.set_state(PlaceOrderFSM.description_state)
+        await state.set_state(PlaceOrderFSM.date_state)
         await state.update_data(price=price)
 
         await m.answer(
-            "Введите описание заказа"
+            "Введите дату заказа"
         )
     except ValueError:
         await m.answer(
             "Необходимо ввести число! Попробуйте еще раз"
         )
+
+
+async def handle_city_date(m: types.Message, state: FSMContext):
+    await state.set_state(PlaceOrderFSM.description_state)
+    await state.update_data(date=m.text)
+
+    await m.answer(
+        "Введите описание заказа"
+    )
+
 
 
 @connection
@@ -63,6 +73,7 @@ async def handle_city_description(m: types.Message, state: FSMContext, db_sessio
     order = await OrderDAO.add_order(
         creator_id=user.id,
         price=s_data["price"],
+        date=s_data["date"],
         session=db_session,
         order_type=OrderType.CITY,
         settlement=s_data['settlement'],
@@ -96,13 +107,22 @@ async def handle_delivery_settlement(m: types.Message, state: FSMContext):
 async def handle_delivery_price(m: types.Message, state: FSMContext):
     try:
         price = int(m.text)
-        await state.set_state(DeliveryOrderFSM.description_state)
+        await state.set_state(DeliveryOrderFSM.date_state)
         await state.update_data(price=price)
-        await m.answer("Введите подробное описание заказа")
+        await m.answer("Введите дату заказа")
     except ValueError:
         await m.answer(
             "Необходимо ввести число, попробуйте еще раз"
         )
+
+
+async def handle_delivery_date(m: types.Message, state: FSMContext):
+    await state.set_state(DeliveryOrderFSM.description_state)
+    await state.update_data(date=m.text)
+
+    await m.answer(
+        "Введите подробное описание заказа"
+    )
 
 
 @connection
@@ -116,6 +136,8 @@ async def handle_delivery_description(m: types.Message, state: FSMContext, db_se
     order = await OrderDAO.add_order(
         creator_id=user.id,
         session=db_session,
+        price=s_data["price"],
+        date=s_data["date"],
         order_type=OrderType.DELIVERY,
         settlement=s_data['settlement'],
         description=s_data['description']
@@ -157,16 +179,25 @@ async def handle_destination(m: types.Message, state: FSMContext):
 async def handle_sdriver_price(m: types.Message, state: FSMContext):
     try:
         price = int(m.text)
-        await state.set_state(SoberDriverFSM.description_state)
+        await state.set_state(SoberDriverFSM.date_state)
         await state.update_data(price=price)
 
         await m.answer(
-            "Введите подробное описание заказа"
+            "Введите датузаказа"
         )
     except ValueError:
         await m.answer(
             "Необходимо ввести число! Попробуйте еще раз"
         )
+
+
+async def handle_sdriver_date(m: types.Message, s: FSMContext):
+    await s.set_state(SoberDriverFSM.description_state)
+    await s.update_data(date=m.text)
+
+    await m.answer(
+        "Введите подробное описание заказа"
+    )
 
 
 @connection
@@ -179,6 +210,7 @@ async def handle_sdriver_description(m: types.Message, state: FSMContext, db_ses
 
     order = await OrderDAO.add_order(
         price=s_data["price"],
+        date=s_data["date"],
         creator_id=user.id,
         session=db_session,
         order_type=OrderType.SOBER_DRIVER,
@@ -198,16 +230,19 @@ def register_orders_handlers(dp: Dispatcher):
     dp.callback_query.register(start_city_order, F.data == "ordertype_2")
     dp.message.register(handle_city_settlement, StateFilter(PlaceOrderFSM.settlement_state))
     dp.message.register(handle_city_price, StateFilter(PlaceOrderFSM.price_state))
+    dp.message.register(handle_city_date, StateFilter(PlaceOrderFSM.date_state))
     dp.message.register(handle_city_description, StateFilter(PlaceOrderFSM.description_state))
 
     dp.callback_query.register(start_deliver_order, F.data == "ordertype_3")
     dp.message.register(handle_delivery_settlement, StateFilter(DeliveryOrderFSM.settlement_state))
     dp.message.register(handle_delivery_price, StateFilter(DeliveryOrderFSM.price_state))
+    dp.message.register(handle_delivery_date, StateFilter(DeliveryOrderFSM.date_state))
     dp.message.register(handle_delivery_description, StateFilter(DeliveryOrderFSM.description_state))
 
     dp.callback_query.register(start_sober_driver_order, F.data == "ordertype_4")
     dp.message.register(handle_from, StateFilter(SoberDriverFSM.from_state))
     dp.message.register(handle_destination, StateFilter(SoberDriverFSM.dest_state))
     dp.message.register(handle_sdriver_price, StateFilter(SoberDriverFSM.price_state))
+    dp.message.register(handle_sdriver_date, StateFilter(SoberDriverFSM.date_state))
     dp.message.register(handle_sdriver_description, StateFilter(SoberDriverFSM.description_state))
 

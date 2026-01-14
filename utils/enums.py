@@ -45,3 +45,7 @@ class OrderType(int, Enum):
     DELIVERY = 3
     SOBER_DRIVER = 4
     FREE_ORDER = 5
+
+
+class OrderStatus(int, Enum):
+    SEARCHING = 0

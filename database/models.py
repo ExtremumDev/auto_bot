@@ -1,14 +1,14 @@
 import datetime
 from typing import List
 
-from sqlalchemy.dialects.mysql import TINYINT
+from sqlalchemy.dialects.mysql import TINYINT, DATETIME
 from sqlalchemy.orm import (
     DeclarativeBase, declared_attr, Mapped, mapped_column, relationship
 )
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy import BigInteger, func, String, Boolean, ForeignKey, Enum
 
-from utils.enums import CarClass, UserType, OrderType
+from utils.enums import CarClass, UserType, OrderType, OrderStatus
 from utils.text import get_cross_city_order_description
 
 
@@ -157,6 +157,8 @@ class FreeOrder(Base):
 class Order(Base):
     order_type: Mapped[OrderType] = mapped_column(TINYINT)
     price: Mapped[int] = mapped_column(default=0, server_default="0")
+    date: Mapped[str] = mapped_column(String(30), nullable=True)
+    order_status: Mapped[OrderStatus] = mapped_column(TINYINT, default=0, server_default="0")
 
     creator_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
     creator: Mapped["User"] = relationship(
@@ -188,16 +190,28 @@ class Order(Base):
     free_order_id: Mapped[int] = mapped_column(ForeignKey("free_orders.id"), nullable=True)
     free_order: Mapped["FreeOrder"] = relationship("FreeOrder", lazy="joined", back_populates="order")
 
+    @property
+    def full_date(self):
+        if self.date:
+            return self.date
+        else:
+            return "Без даты"
+
+
+    @property
+    def full_price(self):
+        return f"{self.price} руб" if self.price else ""
+
     def get_order_name(self) -> str:
         match self.order_type:
             case OrderType.CROSS_CITY:
-                return f"{self.price} руб {self.cross_city.from_city} - {self.cross_city.destination_city}"
+                return f"{self.full_price} руб {self.cross_city.from_city} - {self.cross_city.destination_city}"
             case OrderType.CITY:
-                return f"По городу: {self.place_order.settlement}"
+                return f"{self.full_price} {self.full_date} По городу: {self.place_order.settlement}"
             case OrderType.DELIVERY:
-                return f"Доставка: {self.delivery_order.settlement}"
+                return f"{self.full_price} Доставка: {self.delivery_order.settlement} {self.full_date} "
             case OrderType.SOBER_DRIVER:
-                return "Трезвый водитель"
+                return f"{self.price} Трезвый водитель {self.full_date}"
             case _:
                 return "Заказ"
 
@@ -216,7 +230,9 @@ class Order(Base):
                 )
             case OrderType.CITY:
                 return f"""
-Заказ по городу
+Заказ по городу {self.full_price}
+
+{self.full_date}
 
 Город: {self.place_order.settlement}
 
@@ -224,14 +240,18 @@ class Order(Base):
 """
             case OrderType.DELIVERY:
                 return f"""
-Доставка
+Доставка {self.full_price}
+
+{self.full_date}
 
 Город: {self.delivery_order.settlement}
 Описание: {self.delivery_order.description}
 """
             case OrderType.SOBER_DRIVER:
                 return f"""
-Трезвый водитель
+Трезвый водитель {self.full_price}
+
+{self.full_date}
 
 Откуда: {self.sober_driver.from_point}
 Куда: {self.sober_driver.destination_point}
