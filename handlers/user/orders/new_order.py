@@ -1,4 +1,5 @@
-from aiogram import types, F, Dispatcher
+from aiogram import types, F, Dispatcher, Bot
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.dao import OrderDAO, UserDAO
 from database.utils import connection
 from fsm.user.order import PlaceOrderFSM, DeliveryOrderFSM, SoberDriverFSM
-from markups.user.order import order_type_markup
+from markups.user.order import order_type_markup, get_accept_order_markup
 from utils.enums import OrderType
 
 
@@ -79,6 +80,7 @@ async def handle_city_description(m: types.Message, state: FSMContext, db_sessio
         settlement=s_data['settlement'],
         description=s_data['description']
     )
+    await post_order(bot=m.bot, order=order, db_session=db_session)
 
     await m.answer(
         "Заказ успешно опубликован!"
@@ -143,6 +145,7 @@ async def handle_delivery_description(m: types.Message, state: FSMContext, db_se
         description=s_data['description']
     )
 
+    await post_order(bot=m.bot, order=order, db_session=db_session)
     await m.answer(
         "Заказ успешно опубликован!"
     )
@@ -219,9 +222,25 @@ async def handle_sdriver_description(m: types.Message, state: FSMContext, db_ses
         description=s_data['description']
     )
 
+    await post_order(bot=m.bot, order=order, db_session=db_session)
+
     await m.answer(
         "Заказ успешно опубликован!"
     )
+
+
+async def post_order(bot: Bot, order, db_session: AsyncSession):
+    users = await UserDAO.get_drivers(session=db_session)
+
+    for u in users:
+        try:
+            await bot.send_message(
+                chat_id=u.telegram_id,
+                text=order.get_description(),
+                reply_markup=get_accept_order_markup(order.id)
+            )
+        except TelegramBadRequest:
+            continue
 
 
 def register_orders_handlers(dp: Dispatcher):
