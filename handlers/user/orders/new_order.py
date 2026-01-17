@@ -191,9 +191,9 @@ async def handle_sdriver_price(m: types.Message, state: FSMContext):
         )
 
 
-async def handle_sdriver_date(m: types.Message, s: FSMContext):
-    await s.set_state(SoberDriverFSM.description_state)
-    await s.update_data(date=m.text)
+async def handle_sdriver_date(m: types.Message, state: FSMContext):
+    await state.set_state(SoberDriverFSM.description_state)
+    await state.update_data(date=m.text)
 
     await m.answer(
         "Введите подробное описание заказа"

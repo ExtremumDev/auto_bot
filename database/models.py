@@ -165,14 +165,15 @@ class Order(Base):
         "User",
         lazy="joined",
         back_populates="created_orders",
-        foreign_keys=[creator_id]
+        foreign_keys=[creator_id],
     )
 
     executor_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
     executor: Mapped["User"] = relationship(
         "User",
         back_populates="orders",
-        foreign_keys=[executor_id]
+        foreign_keys=[executor_id],
+        lazy="joined"
     )
 
     cross_city_id: Mapped[int] = mapped_column(ForeignKey("cross_city_orders.id"), nullable=True)
