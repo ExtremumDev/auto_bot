@@ -122,7 +122,7 @@ class Paging:
 
         page = int(c_data[1])
 
-        paging = cls(page + 1)
+        paging = cls(page)
         await paging.get_queryset(db_session=db_session)
         await paging.create_next_page()
 
@@ -137,7 +137,7 @@ class Paging:
 
         page = int(c_data[1])
 
-        paging = cls(page - 1)
+        paging = cls(page)
         await paging.get_queryset(db_session=db_session)
         await paging.create_prev_page()
 

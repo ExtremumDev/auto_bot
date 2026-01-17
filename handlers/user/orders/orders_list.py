@@ -138,7 +138,7 @@ async def accept_order(c: types.CallbackQuery, db_session: AsyncSession, *args):
             user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
 
             order.executor = user
-            order.order_status = OrderStatus.ACCEPTED
+            order.order_status = OrderStatus.ACCEPTED.value
             await db_session.commit()
 
             await c.message.answer(
