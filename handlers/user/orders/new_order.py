@@ -172,7 +172,7 @@ async def handle_destination(m: types.Message, state: FSMContext):
     await state.update_data(end_point=m.text)
 
     await m.answer(
-        "Веедите цену за заказ"
+        "Введите цену за заказ"
     )
 
 
@@ -183,7 +183,7 @@ async def handle_sdriver_price(m: types.Message, state: FSMContext):
         await state.update_data(price=price)
 
         await m.answer(
-            "Введите датузаказа"
+            "Введите дату заказа"
         )
     except ValueError:
         await m.answer(
