@@ -21,10 +21,32 @@ async def send_orders_list(c: types.CallbackQuery, db_session: AsyncSession, *ar
                 await paging.get_queryset(db_session=db_session)
                 await paging.get_current_page()
 
-                await c.message.answer(
-                    "Список заказов",
-                    reply_markup=paging.get_reply_markup()
-                )
+                if paging.queryset:
+                    for i in range(len(paging.queryset)):
+                        o = paging.queryset[i]
+
+                        reply_markup = []
+                        if i == len(paging.queryset):
+                            reply_markup = [types.InlineKeyboardMarkup(
+                                inline_keyboard=[
+                                    [types.InlineKeyboardButton(text="Показать больше заказов", callback_data="onext_1")]
+                                ]
+                            )]
+
+                        reply_markup.extend(
+                            get_accept_order_markup(o.id).inline_keyboard
+                        )
+
+                        await c.message.answer(
+                            text=o.get_description(),
+                            reply_markup=types.InlineKeyboardMarkup(
+                                inline_keyboard=reply_markup
+                            )
+                        )
+                else:
+                    await c.answer(
+                        "Не найдено больше заказов"
+                    )
             else:
                 await c.answer(
                     "Сначала необходимо зарегистрировать автомобиль",
@@ -40,6 +62,43 @@ async def send_orders_list(c: types.CallbackQuery, db_session: AsyncSession, *ar
         await c.answer(
             "Сначала необходимо заполнить анкету водителя, чтобы принимать заказы",
             show_alert=True
+        )
+
+
+@connection
+async def next_page(c: types.CallbackQuery, db_session: AsyncSession):
+    page = int(c.data.split('_')[1])
+
+    paging = OrdersPaging(page=page)
+
+    await paging.get_queryset(db_session=db_session)
+    await paging.get_current_page()
+
+    if paging.queryset:
+        for i in range(len(paging.queryset)):
+            o = paging.queryset[i]
+
+            reply_markup = []
+            if i == len(paging.queryset):
+                reply_markup = [types.InlineKeyboardMarkup(
+                    inline_keyboard=[
+                        [types.InlineKeyboardButton(text="Показать больше заказов", callback_data="onext_0")]
+                    ]
+                )]
+
+            reply_markup.extend(
+                get_accept_order_markup(o.id).inline_keyboard
+            )
+
+            await c.message.answer(
+                text=o.get_description(),
+                reply_markup=types.InlineKeyboardMarkup(
+                    inline_keyboard=reply_markup
+                )
+            )
+    else:
+        await c.answer(
+            "Не найдено больше заказов"
         )
 
 
@@ -106,6 +165,7 @@ async def accept_order(c: types.CallbackQuery, db_session: AsyncSession, *args):
 
 def register_orders_list_handlers(dp: Dispatcher):
     dp.callback_query.register(send_orders_list, F.data == "active_orders")
+    dp.callback_query.register(next_page, F.data.startswith("onext_"))
     OrdersPaging.register_paging_handlers(dp, "o")
     dp.callback_query.register(send_order_card, F.data.startswith("order_"))
     dp.callback_query.register(accept_order, F.data.startswith("acceptorder_"))
