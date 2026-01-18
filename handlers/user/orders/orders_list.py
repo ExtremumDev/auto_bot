@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import OrderDAO, UserDAO
 from database.utils import connection
-from markups.user.order import get_accept_order_markup
+from markups.user.order import get_accept_order_markup, get_give_order_markup
 from utils.enums import OrderStatus
 from utils.paging.orders_paging import OrdersPaging
 
@@ -78,23 +78,19 @@ async def next_page(c: types.CallbackQuery, db_session: AsyncSession):
         for i in range(len(paging.queryset)):
             o = paging.queryset[i]
 
-            reply_markup = []
-            if i == len(paging.queryset):
-                reply_markup = [types.InlineKeyboardMarkup(
-                    inline_keyboard=[
-                        [types.InlineKeyboardButton(text="Показать больше заказов", callback_data="onext_0")]
-                    ]
-                )]
-
-            reply_markup.extend(
-                get_accept_order_markup(o.id).inline_keyboard
-            )
+            reply_markup = get_accept_order_markup(o.id)
+            if i + 1  == len(paging.queryset):
+                reply_markup.inline_keyboard.extend(
+                    types.InlineKeyboardMarkup(
+                        inline_keyboard=[
+                            [types.InlineKeyboardButton(text="Показать больше заказов", callback_data="onext_0")]
+                        ]
+                    ).inline_keyboard
+                )
 
             await c.message.answer(
                 text=o.get_description(),
-                reply_markup=types.InlineKeyboardMarkup(
-                    inline_keyboard=reply_markup
-                )
+                reply_markup=reply_markup
             )
     else:
         await c.answer(
@@ -129,26 +125,69 @@ async def accept_order(c: types.CallbackQuery, db_session: AsyncSession, *args):
     order = await OrderDAO.get_obj(session=db_session, id=order_id)
 
     if order:
-        if order.executor:
+        if order.order_status != OrderStatus.SEARCHING:
             await c.answer(
-                "Этот заказ уже был принят",
+                "Этот заказ уже отдан",
                 show_alert=True
             )
         else:
             user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
 
-            order.executor = user
-            order.order_status = OrderStatus.ACCEPTED.value
+            order.responded.append(user)
             await db_session.commit()
 
             await c.message.answer(
-                f"Заказ был успешно принят. Чат с создателем заказа @{order.creator.telegram_username}"
+                f"Заказ был принят. Чат с создателем заказа @{order.creator.telegram_username}"
             )
 
             try:
                 await c.bot.send_message(
                     chat_id=order.creator.telegram_id,
-                    text=f"Ваш заказ был принят пользлвателем @{user.telegram_username}\n\nИнформация по заказу👇"
+                    text=f"Ваш заказ был принят пользователем @{user.telegram_username}\n\nИнформация по заказу👇",
+                    reply_markup=get_give_order_markup(order_id, user.id)
+                )
+                await c.bot.send_message(
+                    chat_id=order.creator.telegram_id,
+                    text=order.get_description()
+                )
+            except TelegramBadRequest:
+                pass
+    else:
+        await c.answer(
+            "Ошибка, заказ не найден",
+            show_alert=True
+        )
+
+
+@connection
+async def give_order_to_executor(c: types.CallbackQuery, db_session: AsyncSession, *args):
+    c_data = c.data.split('_')
+    order_id, user_id = int(c_data[1]), int(c_data[2])
+
+    order = await OrderDAO.get_obj(session=db_session, id=order_id)
+
+    if order:
+        if order.order_status != OrderStatus.SEARCHING:
+            await c.answer(
+                "Этот заказ уже отдан",
+                show_alert=True
+            )
+        else:
+            executor = await UserDAO.get_obj(session=db_session, id=user_id)
+
+            order.order_status = OrderStatus.ACCEPTED.value
+            order.executor = executor
+            order.responded.clear()
+            await db_session.commit()
+
+            await c.message.answer(
+                f"Заказ был успешно отдан"
+            )
+
+            try:
+                await c.bot.send_message(
+                    chat_id=executor.telegram_id,
+                    text=f"Создатель заказа @{c.from_user.username} отдал вам его на исполнение \n\nИнформация по заказу👇",
                 )
                 await c.bot.send_message(
                     chat_id=order.creator.telegram_id,
@@ -169,3 +208,4 @@ def register_orders_list_handlers(dp: Dispatcher):
     OrdersPaging.register_paging_handlers(dp, "o")
     dp.callback_query.register(send_order_card, F.data.startswith("order_"))
     dp.callback_query.register(accept_order, F.data.startswith("acceptorder_"))
+    dp.callback_query.register(give_order_to_executor, F.data.startswith("giveorder_"))
