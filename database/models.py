@@ -59,11 +59,11 @@ class User(Base):
         foreign_keys="[Order.executor_id]"
     )
 
-    accepted_orders: Mapped[List["Order"]] = relationship(
-        "Order",
-        back_populates="responded",
-        secondary="UsersAcceptedOrders"
-    )
+    # accepted_orders: Mapped[List["Order"]] = relationship(
+    #     "Order",
+    #     back_populates="responded",
+    #     secondary="UsersAcceptedOrders"
+    # )
 
 
 class Driver(Base):
@@ -186,12 +186,12 @@ class Order(Base):
         lazy="joined"
     )
 
-    responded: Mapped[List["User"]] = relationship(
-        "User",
-        back_populates="accepted_orders",
-        lazy="joined",
-        secondary="UsersAcceptedOrders",
-    )
+    # responded: Mapped[List["User"]] = relationship(
+    #     "User",
+    #     back_populates="accepted_orders",
+    #     lazy="joined",
+    #     secondary="UsersAcceptedOrders",
+    # )
 
     cross_city_id: Mapped[int] = mapped_column(ForeignKey("cross_city_orders.id"), nullable=True)
     cross_city: Mapped["CrossCityOrder"] = relationship("CrossCityOrder", lazy="joined", back_populates="order")
