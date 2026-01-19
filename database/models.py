@@ -62,6 +62,7 @@ class User(Base):
     accepted_orders: Mapped[List["Order"]] = relationship(
         "Order",
         back_populates="responded",
+        secondary="UsersAcceptedOrders"
     )
 
 
@@ -158,6 +159,10 @@ class FreeOrder(Base):
 
     order: Mapped["Order"] = relationship("Order", back_populates="free_order")
 
+class UsersAcceptedOrders(Base):
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    order_id: Mapped[int] = mapped_column(ForeignKey("orders.id", ondelete="CASCADE"), primary_key=True)
+
 
 class Order(Base):
     order_type: Mapped[OrderType] = mapped_column(TINYINT)
@@ -185,7 +190,7 @@ class Order(Base):
         "User",
         back_populates="accepted_orders",
         lazy="joined",
-        uselist=True
+        secondary="UsersAcceptedOrders",
     )
 
     cross_city_id: Mapped[int] = mapped_column(ForeignKey("cross_city_orders.id"), nullable=True)
