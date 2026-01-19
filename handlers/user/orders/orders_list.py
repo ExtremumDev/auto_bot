@@ -25,23 +25,20 @@ async def send_orders_list(c: types.CallbackQuery, db_session: AsyncSession, *ar
                     for i in range(len(paging.queryset)):
                         o = paging.queryset[i]
 
-                        reply_markup = []
+                        reply_markup = get_accept_order_markup(o.id)
                         if i + 1 == len(paging.queryset):
-                            reply_markup = [types.InlineKeyboardMarkup(
-                                inline_keyboard=[
-                                    [types.InlineKeyboardButton(text="Показать больше заказов", callback_data="onext_1")]
-                                ]
-                            )]
-
-                        reply_markup.extend(
-                            get_accept_order_markup(o.id).inline_keyboard
-                        )
+                            reply_markup.inline_keyboard.extend(
+                                types.InlineKeyboardMarkup(
+                                    inline_keyboard=[
+                                        [types.InlineKeyboardButton(text="Показать больше заказов",
+                                                                    callback_data="onext_0")]
+                                    ]
+                                ).inline_keyboard
+                            )
 
                         await c.message.answer(
                             text=o.get_description(),
-                            reply_markup=types.InlineKeyboardMarkup(
-                                inline_keyboard=reply_markup
-                            )
+                            reply_markup=reply_markup
                         )
                 else:
                     await c.answer(
