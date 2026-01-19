@@ -160,8 +160,8 @@ class FreeOrder(Base):
     order: Mapped["Order"] = relationship("Order", back_populates="free_order")
 
 class UsersAcceptedOrders(Base):
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
-    order_id: Mapped[int] = mapped_column(ForeignKey("orders.id", ondelete="CASCADE"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    order_id: Mapped[int] = mapped_column(ForeignKey("orders.id", ondelete="CASCADE"))
 
 
 class Order(Base):
