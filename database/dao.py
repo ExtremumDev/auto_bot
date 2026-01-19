@@ -169,7 +169,7 @@ class OrderDAO(BaseDAO):
     @classmethod
     async def get_order_with_accepted(cls, session: AsyncSession, id: int, *args):
         query = select(Order).filter_by(id=id).options(
-            joinedload(Order.responded)
+            selectinload(Order.responded)
         )
 
         res = await session.execute(query)

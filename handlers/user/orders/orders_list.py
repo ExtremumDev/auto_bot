@@ -130,25 +130,30 @@ async def accept_order(c: types.CallbackQuery, db_session: AsyncSession, *args):
         else:
             user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
 
-            order.responded.append(user)
-            await db_session.commit()
+            if not user in order.responded:
 
-            await c.message.answer(
-                f"Заказ был принят. Чат с создателем заказа @{order.creator.telegram_username}"
-            )
 
-            try:
-                await c.bot.send_message(
-                    chat_id=order.creator.telegram_id,
-                    text=f"Ваш заказ был принят пользователем @{user.telegram_username}\n\nИнформация по заказу👇",
-                    reply_markup=get_give_order_markup(order_id, user.id)
+                order.responded.append(user)
+                await db_session.commit()
+
+                await c.message.answer(
+                    f"Заказ был принят. Чат с создателем заказа @{order.creator.telegram_username}"
                 )
-                await c.bot.send_message(
-                    chat_id=order.creator.telegram_id,
-                    text=order.get_description()
-                )
-            except TelegramBadRequest:
-                pass
+
+                try:
+                    await c.bot.send_message(
+                        chat_id=order.creator.telegram_id,
+                        text=f"Ваш заказ был принят пользователем @{user.telegram_username}\n\nИнформация по заказу👇",
+                        reply_markup=get_give_order_markup(order_id, user.id)
+                    )
+                    await c.bot.send_message(
+                        chat_id=order.creator.telegram_id,
+                        text=order.get_description()
+                    )
+                except TelegramBadRequest:
+                    pass
+            else:
+                await c.answer("Вы уже принимали этот заказ")
     else:
         await c.answer(
             "Ошибка, заказ не найден",
