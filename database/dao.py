@@ -166,3 +166,13 @@ class OrderDAO(BaseDAO):
 
         return res.scalars().all()
 
+    @classmethod
+    async def get_order_with_accepted(cls, session: AsyncSession, id: int, *args):
+        query = select(Order).filter_by(id=id).options(
+            joinedload(Order.responded)
+        )
+
+        res = await session.execute(query)
+
+        return res.scalar_one_or_none()
+

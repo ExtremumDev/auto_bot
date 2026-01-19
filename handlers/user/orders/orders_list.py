@@ -122,7 +122,7 @@ async def send_order_card(c: types.CallbackQuery, db_session: AsyncSession, *arg
 async def accept_order(c: types.CallbackQuery, db_session: AsyncSession, *args):
     order_id = int(c.data.split('_')[1])
 
-    order = await OrderDAO.get_obj(session=db_session, id=order_id)
+    order = await OrderDAO.get_order_with_accepted(session=db_session, id=order_id)
 
     if order:
         if order.order_status != OrderStatus.SEARCHING:
@@ -164,7 +164,7 @@ async def give_order_to_executor(c: types.CallbackQuery, db_session: AsyncSessio
     c_data = c.data.split('_')
     order_id, user_id = int(c_data[1]), int(c_data[2])
 
-    order = await OrderDAO.get_obj(session=db_session, id=order_id)
+    order = await OrderDAO.get_order_with_accepted(session=db_session, id=order_id)
 
     if order:
         if order.order_status != OrderStatus.SEARCHING:
