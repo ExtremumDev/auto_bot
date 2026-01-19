@@ -189,7 +189,6 @@ class Order(Base):
     responded: Mapped[List["User"]] = relationship(
         "User",
         back_populates="accepted_orders",
-        lazy="joined",
         secondary="users_accepted_orderss",
     )
 
