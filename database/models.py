@@ -62,7 +62,7 @@ class User(Base):
     accepted_orders: Mapped[List["Order"]] = relationship(
         "Order",
         back_populates="responded",
-        secondary="users_accepted_orders"
+        secondary="users_accepted_orderss"
     )
 
 
@@ -190,7 +190,7 @@ class Order(Base):
         "User",
         back_populates="accepted_orders",
         lazy="joined",
-        secondary="users_accepted_orders",
+        secondary="users_accepted_orderss",
     )
 
     cross_city_id: Mapped[int] = mapped_column(ForeignKey("cross_city_orders.id"), nullable=True)
