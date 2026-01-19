@@ -69,7 +69,7 @@ async def next_page(c: types.CallbackQuery, db_session: AsyncSession):
     paging = OrdersPaging(page=page)
 
     await paging.get_queryset(db_session=db_session)
-    await paging.get_current_page()
+    await paging.create_next_page()
 
     if paging.queryset:
         for i in range(len(paging.queryset)):
