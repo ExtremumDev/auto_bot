@@ -26,7 +26,7 @@ async def send_orders_list(c: types.CallbackQuery, db_session: AsyncSession, *ar
                         o = paging.queryset[i]
 
                         reply_markup = []
-                        if i == len(paging.queryset):
+                        if i + 1 == len(paging.queryset):
                             reply_markup = [types.InlineKeyboardMarkup(
                                 inline_keyboard=[
                                     [types.InlineKeyboardButton(text="Показать больше заказов", callback_data="onext_1")]
