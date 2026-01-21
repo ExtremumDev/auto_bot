@@ -80,7 +80,7 @@ async def next_page(c: types.CallbackQuery, db_session: AsyncSession):
                 reply_markup.inline_keyboard.extend(
                     types.InlineKeyboardMarkup(
                         inline_keyboard=[
-                            [types.InlineKeyboardButton(text="Показать больше заказов", callback_data="onext_0")]
+                            [types.InlineKeyboardButton(text="Показать больше заказов", callback_data=f"onext_{page+1}")]
                         ]
                     ).inline_keyboard
                 )
