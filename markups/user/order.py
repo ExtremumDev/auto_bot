@@ -12,7 +12,7 @@ def get_accept_order_markup(order_id: int):
 def get_give_order_markup(order_id: int, user_id: int):
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="Отдать заказ этому пользователю", callback_data=f"giveorder_{order_id}")]
+            [InlineKeyboardButton(text="Отдать заказ этому пользователю", callback_data=f"giveorder_{order_id}_{user_id}")]
         ]
     )
 
