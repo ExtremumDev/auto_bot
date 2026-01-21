@@ -160,7 +160,9 @@ class OrderDAO(BaseDAO):
 
     @classmethod
     async def get_active_orders(cls, session: AsyncSession, *args) -> Sequence[Order]:
-        query = select(Order).filter_by()
+        query = select(Order).filter_by().order_by(
+            Order.id.desc()
+        )
 
         res = await session.execute(query)
 
