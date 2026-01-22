@@ -8,7 +8,7 @@ from sqlalchemy.orm import (
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy import BigInteger, func, String, Boolean, ForeignKey, Enum
 
-from utils.enums import CarClass, UserType, OrderType, OrderStatus
+from utils.enums import CarClass, UserType, OrderType, OrderStatus, CrossCityOrderSpeed
 from utils.text import get_cross_city_order_description
 
 
@@ -116,7 +116,7 @@ class CrossCityOrder(Base):
 
     intermediate_points: Mapped[str] = mapped_column(String(100))
 
-    speed: Mapped[int] = mapped_column()
+    speed: Mapped[CrossCityOrderSpeed] = mapped_column()
     date: Mapped[datetime.date] = mapped_column(nullable=True)
     time: Mapped[str] = mapped_column(String(20))
 
@@ -243,7 +243,8 @@ class Order(Base):
                     nt_distance=self.cross_city.new_territory_distance,
                     rf_distance=self.cross_city.rf_distance,
                     price=self.price,
-                    description=self.cross_city.description
+                    description=self.cross_city.description,
+                    speed=self.cross_city.speed
                 )
             case OrderType.CITY:
                 return f"""

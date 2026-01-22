@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.dao import OrderDAO, UserDAO
 from database.utils import connection
 from fsm.user.order import PlaceOrderFSM, DeliveryOrderFSM, SoberDriverFSM
-from markups.user.order import order_type_markup, get_accept_order_markup
+from markups.user.order import order_type_markup, get_accept_order_markup, get_manage_order_markup
 from utils.enums import OrderType
 
 
@@ -85,6 +85,10 @@ async def handle_city_description(m: types.Message, state: FSMContext, db_sessio
     await m.answer(
         "Заказ успешно опубликован!"
     )
+    await m.answer(
+        text=order.get_description(),
+        reply_markup=get_manage_order_markup(order.id)
+    )
 
 
 async def start_deliver_order(c: types.CallbackQuery, state: FSMContext):
@@ -148,6 +152,10 @@ async def handle_delivery_description(m: types.Message, state: FSMContext, db_se
     await post_order(bot=m.bot, order=order, db_session=db_session)
     await m.answer(
         "Заказ успешно опубликован!"
+    )
+    await m.answer(
+        text=order.get_description(),
+        reply_markup=get_manage_order_markup(order.id)
     )
 
 
@@ -226,6 +234,10 @@ async def handle_sdriver_description(m: types.Message, state: FSMContext, db_ses
 
     await m.answer(
         "Заказ успешно опубликован!"
+    )
+    await m.answer(
+        text=order.get_description(),
+        reply_markup=get_manage_order_markup(order.id)
     )
 
 

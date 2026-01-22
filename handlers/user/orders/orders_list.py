@@ -1,5 +1,7 @@
 from aiogram import types, F, Dispatcher
 from aiogram.exceptions import TelegramBadRequest
+from aiogram.fsm.context import FSMContext
+from aiogram.types import FSInputFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import OrderDAO, UserDAO
@@ -204,6 +206,29 @@ async def give_order_to_executor(c: types.CallbackQuery, db_session: AsyncSessio
         )
 
 
+@connection
+async def delete_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession, *args):
+    order_id = int(c.data.split('_')[1])
+
+    order = await OrderDAO.get_order_with_accepted(session=db_session, id=order_id)
+
+    if order:
+
+        await db_session.delete(order)
+        await db_session.commit()
+
+        await c.message.answer(
+            f"Заказ был успешно удалён"
+        )
+        await c.answer()
+
+    else:
+        await c.answer(
+            "Ошибка, заказ не найден",
+            show_alert=True
+        )
+
+
 def register_orders_list_handlers(dp: Dispatcher):
     dp.callback_query.register(send_orders_list, F.data == "active_orders")
     dp.callback_query.register(next_page, F.data.startswith("onext_"))
@@ -211,3 +236,4 @@ def register_orders_list_handlers(dp: Dispatcher):
     dp.callback_query.register(send_order_card, F.data.startswith("order_"))
     dp.callback_query.register(accept_order, F.data.startswith("acceptorder_"))
     dp.callback_query.register(give_order_to_executor, F.data.startswith("giveorder_"))
+    dp.callback_query.register(delete_order, F.data.startswith("delorder_"))

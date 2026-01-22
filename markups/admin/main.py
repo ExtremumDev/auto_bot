@@ -10,6 +10,7 @@ admin_panel_markup = InlineKeyboardMarkup(
             InlineKeyboardButton(text="Новая рассылка водителям", callback_data="new_mailing")
         ],
         [InlineKeyboardButton(text="Управление пользователями", callback_data="users_manage")],
+        [InlineKeyboardButton(text="Управление заказами", callback_data="admin_orders_manage")],
         [InlineKeyboardButton(text="Назад в меню", callback_data="main_menu")]
     ]
 )

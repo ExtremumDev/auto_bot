@@ -8,6 +8,13 @@ def get_accept_order_markup(order_id: int):
         ]
     )
 
+def get_manage_order_markup(order_id: int):
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="❌ Удалить заказ", callback_data=f"delorder_{order_id}")]
+        ]
+    )
+
 
 def get_give_order_markup(order_id: int, user_id: int):
     return InlineKeyboardMarkup(

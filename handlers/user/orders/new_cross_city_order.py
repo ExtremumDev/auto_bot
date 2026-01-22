@@ -7,7 +7,7 @@ from database.dao import OrderDAO, UserDAO
 from database.utils import connection
 from fsm.user.order import CrossCityOrderFSM
 from handlers.user.orders.new_order import post_order
-from markups.user.order import order_speed_markup
+from markups.user.order import order_speed_markup, get_manage_order_markup
 from utils.enums import OrderType, CarClass
 
 
@@ -201,6 +201,10 @@ async def handle_description(m: types.Message, state: FSMContext, db_session: As
 
     await m.answer(
         "Заказ успешно опубликован!"
+    )
+    await m.answer(
+        text=order.get_description(),
+        reply_markup=get_manage_order_markup(order.id)
     )
 
     await post_order(m.bot, order=order, db_session=db_session)

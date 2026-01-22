@@ -34,6 +34,23 @@ class CarClass(Enum):
         )
 
 
+class CrossCityOrderSpeed(Enum):
+    FAST = 0
+    CURRENT = 1
+    PRE = 2
+
+    def __str__(self):
+        match self:
+            case CrossCityOrderSpeed.FAST:
+                return "Срочный"
+            case CrossCityOrderSpeed.CURRENT:
+                return "Текущий"
+            case CrossCityOrderSpeed.PRE:
+                return "Предварительный"
+            case _:
+                return ""
+
+
 class UserType(Enum):
     PASSENGER = "passenger"
     DRIVER = "driver"

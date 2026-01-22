@@ -31,10 +31,11 @@ def get_driver_form_text(driver):
 """
 
 def get_cross_city_order_description(
-        from_city, dest_city, intermediate_points, passengers_number, nt_distance, rf_distance, price, description
+        from_city, dest_city, intermediate_points, passengers_number, nt_distance, rf_distance, price, description,
+        speed
 ):
     return f"""
-Заказ между городами.
+Заказ межгород. {speed}
 
 Откуда: {from_city}
 Куда: {dest_city}
