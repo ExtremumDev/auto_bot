@@ -8,12 +8,21 @@ def get_accept_order_markup(order_id: int):
         ]
     )
 
-def get_manage_order_markup(order_id: int):
-    return InlineKeyboardMarkup(
+def get_manage_order_markup(order_id: int, extended: bool = True):
+    keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="❌ Удалить заказ", callback_data=f"delorder_{order_id}")]
         ]
     )
+
+    if extended:
+        keyboard.inline_keyboard.extend(
+            [
+                [InlineKeyboardButton(text="Редактировать заказ", callback_data=f"editorder_{order_id}")]
+            ]
+        )
+
+    return keyboard
 
 
 def get_give_order_markup(order_id: int, user_id: int):

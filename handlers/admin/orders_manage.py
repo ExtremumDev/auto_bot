@@ -18,6 +18,7 @@ async def send_orders_list(c: types.CallbackQuery, db_session: AsyncSession, *ar
         text="Выберете заказ",
         reply_markup=paging.get_reply_markup()
     )
+    await c.answer()
 
 
 @connection
@@ -31,8 +32,9 @@ async def send_order_card(c: types.CallbackQuery, db_session: AsyncSession, *arg
 
         await c.message.answer(
             text=order.get_description(),
-            reply_markup=get_manage_order_markup(order_id)
+            reply_markup=get_manage_order_markup(order_id, False)
         )
+        await c.answer()
     else:
         await c.answer(
             "Ошибка, заказ не найден",
