@@ -145,12 +145,12 @@ async def accept_order(c: types.CallbackQuery, db_session: AsyncSession, *args):
                 try:
                     await c.bot.send_message(
                         chat_id=order.creator.telegram_id,
-                        text=f"Ваш заказ был принят пользователем @{user.telegram_username}\n\nИнформация по заказу👇",
-                        reply_markup=get_give_order_markup(order_id, user.id)
+                        text=order.get_description()
                     )
                     await c.bot.send_message(
                         chat_id=order.creator.telegram_id,
-                        text=order.get_description()
+                        text=f"👆 Ваш заказ был принят пользователем @{user.telegram_username}",
+                        reply_markup=get_give_order_markup(order_id, user.id)
                     )
                 except TelegramBadRequest:
                     pass
