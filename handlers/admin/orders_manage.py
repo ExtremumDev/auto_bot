@@ -5,12 +5,12 @@ from database.dao import OrderDAO
 from database.utils import connection
 from filters.users import MainAdminFilter
 from markups.user.order import get_manage_order_markup
-from utils.paging.orders_paging import OrdersPaging
+from utils.paging.orders_paging import OrdersPaging, AdminOrdersPaging
 
 
 @connection
 async def send_orders_list(c: types.CallbackQuery, db_session: AsyncSession, *args):
-    paging = OrdersPaging()
+    paging = AdminOrdersPaging()
     await paging.get_queryset(db_session=db_session)
     await paging.get_current_page()
 
