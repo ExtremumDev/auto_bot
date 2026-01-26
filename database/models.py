@@ -116,7 +116,7 @@ class CrossCityOrder(Base):
 
     intermediate_points: Mapped[str] = mapped_column(String(100))
 
-    speed: Mapped[CrossCityOrderSpeed] = mapped_column()
+    speed: Mapped[CrossCityOrderSpeed] = mapped_column(TINYINT)
     date: Mapped[datetime.date] = mapped_column(nullable=True)
     time: Mapped[str] = mapped_column(String(20))
 

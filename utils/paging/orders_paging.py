@@ -9,8 +9,8 @@ from .base_paging import Paging
 
 
 class OrdersPaging(Paging):
-    def __init__(self, page: int = 0):
-        super().__init__(page, prefix='o')
+    def __init__(self, page: int = 0, prefix: str = 'o'):
+        super().__init__(page, prefix=prefix)
 
 
     async def get_queryset(self, db_session: AsyncSession, *args, **kwargs):
@@ -34,6 +34,33 @@ class OrdersPaging(Paging):
                     InlineKeyboardButton(
                         text=o.get_order_name(),
                         callback_data=f"order_{o.id}"
+                    )
+                ]
+            )
+
+        return super().get_reply_markup(reply_markup=orders_list_markup)
+
+
+class AdminOrdersPaging(OrdersPaging):
+    def __init__(self, page: int = 0):
+        super().__init__(page, prefix='oa')
+
+    def get_reply_markup(
+        self,
+        reply_markup: types.InlineKeyboardMarkup = None,
+        extra_data: str ='',
+        *args, **kwargs
+    ):
+        orders_list_markup = types.InlineKeyboardMarkup(
+            inline_keyboard=[]
+        )
+
+        for o in self.queryset:
+            orders_list_markup.inline_keyboard.append(
+                [
+                    InlineKeyboardButton(
+                        text=o.get_order_name(),
+                        callback_data=f"aorder_{o.id}"
                     )
                 ]
             )

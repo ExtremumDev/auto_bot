@@ -44,6 +44,6 @@ async def send_order_card(c: types.CallbackQuery, db_session: AsyncSession, *arg
 
 def register_admin_orders_manage_handlers(dp: Dispatcher):
     dp.callback_query.register(send_orders_list, MainAdminFilter(), F.data == "admin_orders_manage")
-    OrdersPaging.register_paging_handlers(dp, "o")
+    OrdersPaging.register_paging_handlers(dp, "ao")
 
-    dp.callback_query.register(send_order_card, MainAdminFilter(), F.data.startswith("order_"))
+    dp.callback_query.register(send_order_card, MainAdminFilter(), F.data.startswith("aorder_"))
