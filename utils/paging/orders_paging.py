@@ -24,21 +24,24 @@ class OrdersPaging(Paging):
         extra_data: str ='',
         *args, **kwargs
     ):
-        orders_list_markup = types.InlineKeyboardMarkup(
-            inline_keyboard=[]
-        )
-
-        for o in self.queryset:
-            orders_list_markup.inline_keyboard.append(
-                [
-                    InlineKeyboardButton(
-                        text=o.get_order_name(),
-                        callback_data=f"order_{o.id}"
-                    )
-                ]
+        if not reply_markup:
+            orders_list_markup = types.InlineKeyboardMarkup(
+                inline_keyboard=[]
             )
 
-        return super().get_reply_markup(reply_markup=orders_list_markup)
+            for o in self.queryset:
+                orders_list_markup.inline_keyboard.append(
+                    [
+                        InlineKeyboardButton(
+                            text=o.get_order_name(),
+                            callback_data=f"order_{o.id}"
+                        )
+                    ]
+                )
+
+            return super().get_reply_markup(reply_markup=orders_list_markup)
+        else:
+            return super().get_reply_markup(reply_markup=reply_markup)
 
 
 class AdminOrdersPaging(OrdersPaging):
@@ -51,7 +54,6 @@ class AdminOrdersPaging(OrdersPaging):
         extra_data: str ='',
         *args, **kwargs
     ):
-        print("\n\n\n\n\n\n\n\nfenrfehrfew\n\n\n\n\n\n\n\n\n")
         orders_list_markup = types.InlineKeyboardMarkup(
             inline_keyboard=[]
         )
