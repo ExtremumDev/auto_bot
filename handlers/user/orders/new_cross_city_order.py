@@ -94,7 +94,7 @@ async def handle_time(m: types.Message, state: FSMContext):
 
 async def handle_passengers_count(m: types.Message, state: FSMContext):
     try:
-        passengers_count = m.text
+        passengers_count = int(m.text)
 
         await state.set_state(CrossCityOrderFSM.car_class_state)
         await state.update_data(passengers_count=passengers_count)

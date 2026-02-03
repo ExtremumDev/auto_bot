@@ -185,7 +185,7 @@ async def give_order_to_executor(c: types.CallbackQuery, db_session: AsyncSessio
             await db_session.commit()
 
             await c.message.answer(
-                f"Заказ был успешно отдан пользователю {executor.telegram_username}"
+                f"Заказ был успешно отдан пользователю @{executor.telegram_username}"
             )
 
             try:

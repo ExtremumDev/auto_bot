@@ -56,7 +56,7 @@ async def block_user(c: types.CallbackQuery, db_session: AsyncSession, *args):
     await db_session.commit()
 
     await c.message.edit_reply_markup(
-        reply_markup=get_main_user_manage_markup(user_id, user.is_blocked)
+        reply_markup=get_main_user_manage_markup(user_id, user.is_blocked, c.from_user.id in AdminsSettings.MAIN_ADMIN_ID)
     )
     await c.answer("Пользователь временно заблокирован", show_alert=True)
 
