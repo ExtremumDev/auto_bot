@@ -165,7 +165,7 @@ class UsersAcceptedOrders(Base):
 
 class Order(Base):
     order_type: Mapped[OrderType] = mapped_column(TINYINT)
-    price: Mapped[int] = mapped_column(default=0, server_default="0")
+    price: Mapped[str] = mapped_column(String(30), default="0", server_default="0")
     date: Mapped[str] = mapped_column(String(30), nullable=True)
     order_status: Mapped[OrderStatus] = mapped_column(TINYINT, default=0, server_default="0")
 

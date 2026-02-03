@@ -185,7 +185,7 @@ async def give_order_to_executor(c: types.CallbackQuery, db_session: AsyncSessio
             await db_session.commit()
 
             await c.message.answer(
-                f"Заказ был успешно отдан"
+                f"Заказ был успешно отдан пользователю {executor.telegram_username}"
             )
 
             try:
@@ -194,7 +194,7 @@ async def give_order_to_executor(c: types.CallbackQuery, db_session: AsyncSessio
                     text=f"Создатель заказа @{c.from_user.username} отдал вам его на исполнение \n\nИнформация по заказу👇",
                 )
                 await c.bot.send_message(
-                    chat_id=order.creator.telegram_id,
+                    chat_id=executor.telegram_id,
                     text=order.get_description()
                 )
             except TelegramBadRequest:

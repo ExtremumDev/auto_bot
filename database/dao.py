@@ -119,7 +119,7 @@ class OrderDAO(BaseDAO):
 
     @classmethod
     async def add_order(
-            cls, session: AsyncSession, order_type: OrderType, creator_id: int, price: int, date: str,
+            cls, session: AsyncSession, order_type: OrderType, creator_id: int, price: int | str, date: str,
             **order_kwargs
     ):
 

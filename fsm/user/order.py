@@ -45,4 +45,5 @@ class SoberDriverFSM(StatesGroup):
 
 class FreeOrderFSM(StatesGroup):
     description_state = State()
+    price_state = State()
     date_state = State()

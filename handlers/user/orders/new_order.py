@@ -1,7 +1,6 @@
-import crypt
 
 from aiogram import types, F, Dispatcher, Bot
-from aiogram.exceptions import TelegramBadRequest
+from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -42,7 +41,7 @@ async def handle_city_settlement(m: types.Message, state: FSMContext):
 
 async def handle_city_price(m: types.Message, state: FSMContext):
     try:
-        price = int(m.text)
+        price = m.text
         await state.set_state(PlaceOrderFSM.date_state)
         await state.update_data(price=price)
 
@@ -114,7 +113,7 @@ async def handle_delivery_settlement(m: types.Message, state: FSMContext):
 
 async def handle_delivery_price(m: types.Message, state: FSMContext):
     try:
-        price = int(m.text)
+        price = m.text
         await state.set_state(DeliveryOrderFSM.date_state)
         await state.update_data(price=price)
         await m.answer("Введите дату и время заказа")
@@ -191,7 +190,7 @@ async def handle_destination(m: types.Message, state: FSMContext):
 
 async def handle_sdriver_price(m: types.Message, state: FSMContext):
     try:
-        price = int(m.text)
+        price = m.text
         await state.set_state(SoberDriverFSM.date_state)
         await state.update_data(price=price)
 
@@ -253,7 +252,7 @@ async def post_order(bot: Bot, order, db_session: AsyncSession):
                 text=order.get_description(),
                 reply_markup=get_accept_order_markup(order.id)
             )
-        except TelegramBadRequest:
+        except TelegramForbiddenError:
             continue
 
 
@@ -264,7 +263,7 @@ async def start_free_order(c: types.CallbackQuery, state: FSMContext):
     )
 
 
-async def handle_free_price(m: types.Message, state: FSMContext):
+async def handle_free_description(m: types.Message, state: FSMContext):
     await state.set_state(FreeOrderFSM.date_state)
     await state.update_data(description=m.text[:199])
 
@@ -273,10 +272,10 @@ async def handle_free_price(m: types.Message, state: FSMContext):
     )
 
 
-async def handle_free_description(m: types.Message, state: FSMContext):
+async def handle_free_price(m: types.Message, state: FSMContext):
 
     try:
-        price = int(m.text)
+        price = m.text
         await state.set_state(FreeOrderFSM.date_state)
         await state.update_data(price=price)
 
@@ -339,4 +338,9 @@ def register_orders_handlers(dp: Dispatcher):
     dp.message.register(handle_sdriver_price, StateFilter(SoberDriverFSM.price_state))
     dp.message.register(handle_sdriver_date, StateFilter(SoberDriverFSM.date_state))
     dp.message.register(handle_sdriver_description, StateFilter(SoberDriverFSM.description_state))
+
+    dp.callback_query.register(start_free_order, F.data == "ordertype_5")
+    dp.message.register(handle_free_description, StateFilter(FreeOrderFSM.description_state))
+    dp.message.register(handle_free_price, StateFilter(FreeOrderFSM.price_state))
+    dp.message.register(handle_free_date, StateFilter(FreeOrderFSM.date_state))
 

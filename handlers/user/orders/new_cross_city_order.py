@@ -94,7 +94,7 @@ async def handle_time(m: types.Message, state: FSMContext):
 
 async def handle_passengers_count(m: types.Message, state: FSMContext):
     try:
-        passengers_count = int(m.text)
+        passengers_count = m.text
 
         await state.set_state(CrossCityOrderFSM.car_class_state)
         await state.update_data(passengers_count=passengers_count)
@@ -157,7 +157,7 @@ async def handle_rf_distance(m: types.Message, state: FSMContext):
 
 async def handle_price(m: types.Message, state: FSMContext):
     try:
-        price = int(m.text)
+        price = m.text
         await state.update_data(price=price)
 
         await state.set_state(CrossCityOrderFSM.description_state)
