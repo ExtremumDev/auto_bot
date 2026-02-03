@@ -35,7 +35,7 @@ def get_cross_city_order_description(
         speed, time, date = None
 ):
     return f"""
-Заказ межгород. {speed.name}
+Заказ межгород. {speed}
 
 {'Дата: ' + date if date else ''}
 Время: {time}
