@@ -153,7 +153,6 @@ class SoberDriverOrder(Base):
     order: Mapped["Order"] = relationship("Order", back_populates="sober_driver")
 
 
-
 class FreeOrder(Base):
     description: Mapped[str] = mapped_column(String(100))
 
@@ -244,7 +243,9 @@ class Order(Base):
                     rf_distance=self.cross_city.rf_distance,
                     price=self.price,
                     description=self.cross_city.description,
-                    speed=self.cross_city.speed
+                    speed=self.cross_city.speed,
+                    time=self.cross_city.time,
+                    date=self.cross_city.date
                 )
             case OrderType.CITY:
                 return f"""

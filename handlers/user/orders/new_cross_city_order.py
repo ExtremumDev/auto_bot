@@ -79,7 +79,7 @@ async def handle_date(m: types.Message, state: FSMContext):
     await state.update_data(date=date)
 
     await m.answer(
-        "Укажите вермя поездки"
+        "Укажите время поездки"
     )
 
 

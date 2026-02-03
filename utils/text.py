@@ -32,10 +32,13 @@ def get_driver_form_text(driver):
 
 def get_cross_city_order_description(
         from_city, dest_city, intermediate_points, passengers_number, nt_distance, rf_distance, price, description,
-        speed
+        speed, time, date = None
 ):
     return f"""
-Заказ межгород. {speed}
+Заказ межгород. {speed.name}
+
+{'Дата: ' + date if date else ''}
+Время: {time}
 
 Откуда: {from_city}
 Куда: {dest_city}

@@ -1,3 +1,5 @@
+import crypt
+
 from aiogram import types, F, Dispatcher, Bot
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import StateFilter
@@ -6,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import OrderDAO, UserDAO
 from database.utils import connection
-from fsm.user.order import PlaceOrderFSM, DeliveryOrderFSM, SoberDriverFSM
+from fsm.user.order import PlaceOrderFSM, DeliveryOrderFSM, SoberDriverFSM, FreeOrderFSM
 from markups.user.order import order_type_markup, get_accept_order_markup, get_manage_order_markup
 from utils.enums import OrderType
 
@@ -45,7 +47,7 @@ async def handle_city_price(m: types.Message, state: FSMContext):
         await state.update_data(price=price)
 
         await m.answer(
-            "Введите дату заказа"
+            "Введите дату и время заказа"
         )
     except ValueError:
         await m.answer(
@@ -58,7 +60,7 @@ async def handle_city_date(m: types.Message, state: FSMContext):
     await state.update_data(date=m.text)
 
     await m.answer(
-        "Введите описание заказа"
+        "Укажите детали заказа или напишите \"Нет\""
     )
 
 
@@ -115,7 +117,7 @@ async def handle_delivery_price(m: types.Message, state: FSMContext):
         price = int(m.text)
         await state.set_state(DeliveryOrderFSM.date_state)
         await state.update_data(price=price)
-        await m.answer("Введите дату заказа")
+        await m.answer("Введите дату и время заказа")
     except ValueError:
         await m.answer(
             "Необходимо ввести число, попробуйте еще раз"
@@ -127,7 +129,7 @@ async def handle_delivery_date(m: types.Message, state: FSMContext):
     await state.update_data(date=m.text)
 
     await m.answer(
-        "Введите подробное описание заказа"
+        "Укажите детали заказа или напишите \"Нет\""
     )
 
 
@@ -194,7 +196,7 @@ async def handle_sdriver_price(m: types.Message, state: FSMContext):
         await state.update_data(price=price)
 
         await m.answer(
-            "Введите дату заказа"
+            "Введите дату и время заказа"
         )
     except ValueError:
         await m.answer(
@@ -207,7 +209,7 @@ async def handle_sdriver_date(m: types.Message, state: FSMContext):
     await state.update_data(date=m.text)
 
     await m.answer(
-        "Введите подробное описание заказа"
+        "Укажите детали заказа или напишите \"Нет\""
     )
 
 
@@ -253,6 +255,67 @@ async def post_order(bot: Bot, order, db_session: AsyncSession):
             )
         except TelegramBadRequest:
             continue
+
+
+async def start_free_order(c: types.CallbackQuery, state: FSMContext):
+    await state.set_state(FreeOrderFSM.description_state)
+    await c.message.answer(
+        "Введите детали заказа"
+    )
+
+
+async def handle_free_price(m: types.Message, state: FSMContext):
+    await state.set_state(FreeOrderFSM.date_state)
+    await state.update_data(description=m.text[:199])
+
+    await m.answer(
+        "Введите цену за заказ"
+    )
+
+
+async def handle_free_description(m: types.Message, state: FSMContext):
+
+    try:
+        price = int(m.text)
+        await state.set_state(FreeOrderFSM.date_state)
+        await state.update_data(price=price)
+
+        await m.answer(
+            "Введите дату и время заказа"
+        )
+    except ValueError:
+        await m.answer(
+            "Необходимо ввести число! Попробуйте еще раз"
+        )
+
+@connection
+async def handle_free_date(m: types.Message, state: FSMContext, db_session: AsyncSession):
+    await state.update_data(date=m.text.strip()[:29])
+    s_data = await state.get_data()
+    await state.clear()
+
+
+    user = await UserDAO.get_obj(session=db_session, telegram_id=m.from_user.id)
+
+    order = await OrderDAO.add_order(
+        date=s_data["date"],
+        creator_id=user.id,
+        session=db_session,
+        order_type=OrderType.FREE_ORDER,
+        description=s_data['description'],
+        price=s_data['price']
+    )
+
+    await post_order(bot=m.bot, order=order, db_session=db_session)
+
+    await m.answer(
+        "Заказ успешно опубликован!"
+    )
+    await m.answer(
+        text=order.get_description(),
+        reply_markup=get_manage_order_markup(order.id)
+    )
+
 
 
 def register_orders_handlers(dp: Dispatcher):
