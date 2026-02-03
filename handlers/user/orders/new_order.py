@@ -259,12 +259,12 @@ async def post_order(bot: Bot, order, db_session: AsyncSession):
 async def start_free_order(c: types.CallbackQuery, state: FSMContext):
     await state.set_state(FreeOrderFSM.description_state)
     await c.message.answer(
-        "Введите детали заказа"
+        "Введите детали заказа или напишите \"Нет\""
     )
 
 
 async def handle_free_description(m: types.Message, state: FSMContext):
-    await state.set_state(FreeOrderFSM.date_state)
+    await state.set_state(FreeOrderFSM.price_state)
     await state.update_data(description=m.text[:199])
 
     await m.answer(
