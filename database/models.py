@@ -245,7 +245,7 @@ class Order(Base):
                     rf_distance=self.cross_city.rf_distance,
                     price=self.price,
                     description=self.cross_city.description,
-                    speed=self.cross_city.speed,
+                    speed=CrossCityOrderSpeed(self.cross_city.speed),
                     time=self.cross_city.time,
                     date=self.cross_city.date
                 )

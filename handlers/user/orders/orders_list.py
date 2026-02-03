@@ -68,7 +68,7 @@ async def send_orders_list(c: types.CallbackQuery, db_session: AsyncSession, *ar
 async def next_page(c: types.CallbackQuery, db_session: AsyncSession):
     page = int(c.data.split('_')[1])
 
-    paging = OrdersPaging(page=page + 1)
+    paging = OrdersPaging(page=page)
 
     await paging.get_queryset(db_session=db_session)
     await paging.create_next_page()
