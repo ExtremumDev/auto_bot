@@ -228,6 +228,8 @@ class Order(Base):
                 return f"{self.full_price} Доставка: {self.delivery_order.settlement} {self.full_date} "
             case OrderType.SOBER_DRIVER:
                 return f"{self.price} Трезвый водитель {self.full_date}"
+            case OrderType.FREE_ORDER:
+                return f"{self.price} {self.free_order.description[:20]}"
             case _:
                 return "Заказ"
 
@@ -276,6 +278,14 @@ class Order(Base):
 Куда: {self.sober_driver.destination_point}
 
 Описание: {self.sober_driver.description}
+"""
+            case OrderType.FREE_ORDER:
+                return f"""
+Заказ {self.full_price}
+
+Дата, время: {self.date}
+
+Описание: {self.free_order.description}
 """
             case _:
                 return "Заказ"
