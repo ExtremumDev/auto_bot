@@ -32,7 +32,7 @@ async def send_orders_list(c: types.CallbackQuery, db_session: AsyncSession, *ar
                             reply_markup.inline_keyboard.extend(
                                 types.InlineKeyboardMarkup(
                                     inline_keyboard=[
-                                        [types.InlineKeyboardButton(text="Показать больше заказов",
+                                        [types.InlineKeyboardButton(text="Показать более новые заказы",
                                                                     callback_data="onext_0")]
                                     ]
                                 ).inline_keyboard
@@ -82,7 +82,7 @@ async def next_page(c: types.CallbackQuery, db_session: AsyncSession):
                 reply_markup.inline_keyboard.extend(
                     types.InlineKeyboardMarkup(
                         inline_keyboard=[
-                            [types.InlineKeyboardButton(text="Показать больше заказов", callback_data=f"onext_{page+1}")]
+                            [types.InlineKeyboardButton(text="Показать более новые заказы", callback_data=f"onext_{page+1}")]
                         ]
                     ).inline_keyboard
                 )
