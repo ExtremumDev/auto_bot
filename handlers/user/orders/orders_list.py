@@ -246,7 +246,7 @@ async def close_orders_menu(c: types.CallbackQuery):
 
 def register_orders_list_handlers(dp: Dispatcher):
     dp.callback_query.register(send_orders_list, F.data == "active_orders")
-    dp.callback_query.register(next_page, F.data.startswith("onext_"))
+    # dp.callback_query.register(next_page, F.data.startswith("onext_"))
     OrdersPaging.register_paging_handlers(dp, "o")
     dp.callback_query.register(send_order_card, F.data.startswith("order_"))
     dp.callback_query.register(accept_order, F.data.startswith("acceptorder_"))
