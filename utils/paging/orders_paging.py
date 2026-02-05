@@ -39,7 +39,12 @@ class OrdersPaging(Paging):
                     ]
                 )
 
-            return super().get_reply_markup(reply_markup=orders_list_markup)
+            paging_markup = super().get_reply_markup(reply_markup=orders_list_markup)
+
+            paging_markup.inline_keyboard.append(
+                [InlineKeyboardButton(text="❌ Закрыть меню", callback_data="close_orders_paging")]
+            )
+            return paging_markup
         else:
             return super().get_reply_markup(reply_markup=reply_markup)
 

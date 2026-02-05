@@ -23,29 +23,34 @@ async def send_orders_list(c: types.CallbackQuery, db_session: AsyncSession, *ar
                 await paging.get_queryset(db_session=db_session)
                 await paging.get_current_page()
 
-                if paging.queryset:
-                    for i in range(len(paging.queryset)):
-                        o = paging.queryset[i]
+                await c.message.answer(
+                    "Выберите заказ",
+                    reply_markup=paging.get_reply_markup()
+                )
 
-                        reply_markup = get_accept_order_markup(o.id)
-                        if i + 1 == len(paging.queryset):
-                            reply_markup.inline_keyboard.extend(
-                                types.InlineKeyboardMarkup(
-                                    inline_keyboard=[
-                                        [types.InlineKeyboardButton(text="Показать более новые заказы",
-                                                                    callback_data="onext_0")]
-                                    ]
-                                ).inline_keyboard
-                            )
-
-                        await c.message.answer(
-                            text=o.get_description(),
-                            reply_markup=reply_markup
-                        )
-                else:
-                    await c.answer(
-                        "Не найдено больше заказов"
-                    )
+                # if paging.queryset:
+                #     for i in range(len(paging.queryset)):
+                #         o = paging.queryset[i]
+                #
+                #         reply_markup = get_accept_order_markup(o.id)
+                #         if i + 1 == len(paging.queryset):
+                #             reply_markup.inline_keyboard.extend(
+                #                 types.InlineKeyboardMarkup(
+                #                     inline_keyboard=[
+                #                         [types.InlineKeyboardButton(text="Показать более новые заказы",
+                #                                                     callback_data="onext_0")]
+                #                     ]
+                #                 ).inline_keyboard
+                #             )
+                #
+                #         await c.message.answer(
+                #             text=o.get_description(),
+                #             reply_markup=reply_markup
+                #         )
+                # else:
+                #     await c.answer(
+                #         "Не найдено больше заказов"
+                #     )
             else:
                 await c.answer(
                     "Сначала необходимо зарегистрировать автомобиль",
@@ -228,6 +233,16 @@ async def delete_order(c: types.CallbackQuery, state: FSMContext, db_session: As
             show_alert=True
         )
 
+async def close_orders_menu(c: types.CallbackQuery):
+    try:
+        await c.message.delete()
+    except:
+        await c.message.edit_reply_markup(
+            reply_markup=None
+        )
+
+    await c.answer()
+
 
 def register_orders_list_handlers(dp: Dispatcher):
     dp.callback_query.register(send_orders_list, F.data == "active_orders")
@@ -237,3 +252,4 @@ def register_orders_list_handlers(dp: Dispatcher):
     dp.callback_query.register(accept_order, F.data.startswith("acceptorder_"))
     dp.callback_query.register(give_order_to_executor, F.data.startswith("giveorder_"))
     dp.callback_query.register(delete_order, F.data.startswith("delorder_"))
+    dp.callback_query.register(close_orders_menu, F.data == "close_orders_paging")
