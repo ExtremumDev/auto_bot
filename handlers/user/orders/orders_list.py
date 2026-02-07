@@ -125,7 +125,7 @@ async def send_order_card(c: types.CallbackQuery, db_session: AsyncSession, *arg
 
 @connection
 async def accept_order(c: types.CallbackQuery, db_session: AsyncSession, *args):
-    if check_user_blocked(c.from_user.id, db_session=db_session):
+    if await check_user_blocked(c.from_user.id, db_session=db_session):
         await c.answer("Вы не имеете права принимать заказы")
         return
     order_id = int(c.data.split('_')[1])

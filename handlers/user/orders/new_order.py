@@ -24,7 +24,7 @@ async def send_order_types(c: types.CallbackQuery, state: FSMContext):
 
 @connection
 async def start_city_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
-    if check_user_blocked(c.from_user.id, db_session=db_session):
+    if await check_user_blocked(c.from_user.id, db_session=db_session):
         await c.answer("Вы не имеете права публикоавть заказы")
         return
 
@@ -100,7 +100,7 @@ async def handle_city_description(m: types.Message, state: FSMContext, db_sessio
 
 @connection
 async def start_deliver_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
-    if check_user_blocked(c.from_user.id, db_session=db_session):
+    if await check_user_blocked(c.from_user.id, db_session=db_session):
         await c.answer("Вы не имеете права публикоавть заказы")
         return
     await state.set_state(DeliveryOrderFSM.settlement_state)
@@ -172,7 +172,7 @@ async def handle_delivery_description(m: types.Message, state: FSMContext, db_se
 
 @connection
 async def start_sober_driver_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
-    if check_user_blocked(c.from_user.id, db_session=db_session):
+    if await check_user_blocked(c.from_user.id, db_session=db_session):
         await c.answer("Вы не имеете права публикоавть заказы")
         return
     await state.set_state(SoberDriverFSM.from_state)
@@ -272,7 +272,7 @@ async def post_order(bot: Bot, order, db_session: AsyncSession):
 
 @connection
 async def start_free_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
-    if check_user_blocked(c.from_user.id, db_session=db_session):
+    if await check_user_blocked(c.from_user.id, db_session=db_session):
         await c.answer("Вы не имеете права публикоавть заказы")
         return
     await state.set_state(FreeOrderFSM.description_state)

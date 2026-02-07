@@ -2,6 +2,7 @@ from aiogram import types, Dispatcher, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.util import await_only
 
 from database.dao import OrderDAO, UserDAO
 from database.utils import connection
@@ -14,7 +15,7 @@ from utils.utils import check_user_blocked
 
 @connection
 async def start_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
-    if check_user_blocked(c.from_user.id, db_session=db_session):
+    if await check_user_blocked(c.from_user.id, db_session=db_session):
         await c.answer("Вы не имеете права публикоавть заказы")
         return
     order_type_number = int(c.data.split('_')[1])
