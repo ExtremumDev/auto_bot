@@ -10,6 +10,7 @@ from database.utils import connection
 from fsm.user.order import PlaceOrderFSM, DeliveryOrderFSM, SoberDriverFSM, FreeOrderFSM
 from markups.user.order import order_type_markup, get_accept_order_markup, get_manage_order_markup
 from utils.enums import OrderType
+from utils.utils import check_user_blocked
 
 
 async def send_order_types(c: types.CallbackQuery, state: FSMContext):
@@ -21,7 +22,12 @@ async def send_order_types(c: types.CallbackQuery, state: FSMContext):
     await c.answer()
 
 
-async def start_city_order(c: types.CallbackQuery, state: FSMContext):
+@connection
+async def start_city_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
+    if check_user_blocked(c.from_user.id, db_session=db_session):
+        await c.answer("Вы не имеете права публикоавть заказы")
+        return
+
     await state.set_state(PlaceOrderFSM.settlement_state)
     await c.message.answer(
         "Укажите название населенного пункта"
@@ -92,7 +98,11 @@ async def handle_city_description(m: types.Message, state: FSMContext, db_sessio
     )
 
 
-async def start_deliver_order(c: types.CallbackQuery, state: FSMContext):
+@connection
+async def start_deliver_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
+    if check_user_blocked(c.from_user.id, db_session=db_session):
+        await c.answer("Вы не имеете права публикоавть заказы")
+        return
     await state.set_state(DeliveryOrderFSM.settlement_state)
 
     await c.message.answer(
@@ -160,7 +170,11 @@ async def handle_delivery_description(m: types.Message, state: FSMContext, db_se
     )
 
 
-async def start_sober_driver_order(c: types.CallbackQuery, state: FSMContext):
+@connection
+async def start_sober_driver_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
+    if check_user_blocked(c.from_user.id, db_session=db_session):
+        await c.answer("Вы не имеете права публикоавть заказы")
+        return
     await state.set_state(SoberDriverFSM.from_state)
 
     await c.message.answer(
@@ -256,7 +270,11 @@ async def post_order(bot: Bot, order, db_session: AsyncSession):
             continue
 
 
-async def start_free_order(c: types.CallbackQuery, state: FSMContext):
+@connection
+async def start_free_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
+    if check_user_blocked(c.from_user.id, db_session=db_session):
+        await c.answer("Вы не имеете права публикоавть заказы")
+        return
     await state.set_state(FreeOrderFSM.description_state)
     await c.message.answer(
         "Введите детали заказа или напишите \"Нет\""

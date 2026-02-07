@@ -2,6 +2,21 @@ import datetime
 from pathlib import Path
 
 from aiogram import types
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.util import await_only
+
+from database.dao import UserDAO
+
+
+async def check_user_blocked(telegram_id: int, db_session: AsyncSession):
+    """
+    :return: True - if user blocked, False - if not
+    """
+    user = await UserDAO.get_obj(session=db_session, telegram_id=telegram_id)
+
+    if user:
+        return user.is_blocked
+    return True
 
 
 async def check_and_save_photo(message: types.Message, save_path: Path, file_name_format: str) -> bool | str:

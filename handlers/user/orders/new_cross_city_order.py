@@ -9,9 +9,14 @@ from fsm.user.order import CrossCityOrderFSM
 from handlers.user.orders.new_order import post_order
 from markups.user.order import order_speed_markup, get_manage_order_markup
 from utils.enums import OrderType, CarClass
+from utils.utils import check_user_blocked
 
 
-async def start_order(c: types.CallbackQuery, state: FSMContext):
+@connection
+async def start_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
+    if check_user_blocked(c.from_user.id, db_session=db_session):
+        await c.answer("Вы не имеете права публикоавть заказы")
+        return
     order_type_number = int(c.data.split('_')[1])
 
     order_type = OrderType(order_type_number)

@@ -9,6 +9,7 @@ from database.utils import connection
 from markups.user.order import get_accept_order_markup, get_give_order_markup
 from utils.enums import OrderStatus
 from utils.paging.orders_paging import OrdersPaging
+from utils.utils import check_user_blocked
 
 
 @connection
@@ -124,6 +125,9 @@ async def send_order_card(c: types.CallbackQuery, db_session: AsyncSession, *arg
 
 @connection
 async def accept_order(c: types.CallbackQuery, db_session: AsyncSession, *args):
+    if check_user_blocked(c.from_user.id, db_session=db_session):
+        await c.answer("Вы не имеете права принимать заказы")
+        return
     order_id = int(c.data.split('_')[1])
 
     order = await OrderDAO.get_order_with_accepted(session=db_session, id=order_id)
