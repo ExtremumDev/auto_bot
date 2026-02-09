@@ -22,7 +22,7 @@ async def send_orders_list(c: types.CallbackQuery, db_session: AsyncSession, *ar
                 paging = OrdersPaging()
 
                 await paging.get_queryset(db_session=db_session)
-                await paging.get_current_page()
+                # await paging.get_current_page()
                 #
                 # await c.message.answer(
                 #     "Выберите заказ",
@@ -34,15 +34,15 @@ async def send_orders_list(c: types.CallbackQuery, db_session: AsyncSession, *ar
                         o = paging.queryset[i]
 
                         reply_markup = get_accept_order_markup(o.id)
-                        if i + 1 == len(paging.queryset):
-                            reply_markup.inline_keyboard.extend(
-                                types.InlineKeyboardMarkup(
-                                    inline_keyboard=[
-                                        [types.InlineKeyboardButton(text="Показать более новые заказы",
-                                                                    callback_data="onext_0")]
-                                    ]
-                                ).inline_keyboard
-                            )
+                        # if i + 1 == len(paging.queryset):
+                        #     reply_markup.inline_keyboard.extend(
+                        #         types.InlineKeyboardMarkup(
+                        #             inline_keyboard=[
+                        #                 [types.InlineKeyboardButton(text="Показать более новые заказы",
+                        #                                             callback_data="onext_0")]
+                        #             ]
+                        #         ).inline_keyboard
+                        #     )
 
                         await c.message.answer(
                             text=o.get_description(),
