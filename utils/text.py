@@ -5,7 +5,7 @@ from utils.enums import CarClass
 
 def get_car_description(brand: str, model: str, release_year: int, car_number: str, sts_series: str, sts_number: str, car_class: CarClass):
     return f"""
-{brand} {model}. {car_class}
+{brand} {model}. {car_class.name}
 
 Год выпуска: {release_year}
 
