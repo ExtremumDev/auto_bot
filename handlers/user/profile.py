@@ -17,7 +17,7 @@ async def send_profile_info(c: types.CallbackQuery, db_session: AsyncSession, *a
             is_drive_confirmed=user.driver.is_moderated if user.driver else False,
             cars=user.cars
         ),
-        reply_markup=get_profile_markup()
+        reply_markup=get_profile_markup(is_has_driver=user.driver)
     )
 
     await c.answer()

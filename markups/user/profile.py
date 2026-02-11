@@ -2,11 +2,20 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from database.models import Driver
 
-def get_profile_markup():
+def get_profile_markup(is_has_driver: bool = True):
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="История редактирования анкеты", callback_data="forms_history")],
-            [InlineKeyboardButton(text="Редактировтаь анкету", callback_data="edit_form")],
+            [
+                InlineKeyboardButton(
+                    text="Редактировтаь анкету",
+                    callback_data="edit_form"
+                )
+                if is_has_driver else InlineKeyboardButton(
+                    text="Заполнить анкету",
+                    callback_data="fill_form"
+                )
+            ],
             [InlineKeyboardButton(text="Управление моими автомобилями", callback_data="car_manage")]
         ]
     )

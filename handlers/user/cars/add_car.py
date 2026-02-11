@@ -98,7 +98,7 @@ async def handle_car_class(c: types.CallbackQuery, state: FSMContext):
     car_class_id = c.data.split('_')[1]
 
     await state.set_state(AddingCarFSM.photo_state)
-    await state.update_data(car_class=CarClass(car_class_id))
+    await state.update_data(car_class=CarClass(car_class_id).name)
 
     await c.message.answer(
         "Пришлите фотографию автомобиля"

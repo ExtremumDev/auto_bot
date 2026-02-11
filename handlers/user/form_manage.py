@@ -1,5 +1,3 @@
-from http.cookiejar import split_header_words
-
 from aiogram import types, F, Dispatcher
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext

@@ -8,6 +8,12 @@ from utils.logger import get_bot_logger, setup_logger
 
 
 async def on_startup():
+    try:
+        with open("rules.txt", 'r', encoding='utf-8') as rules_file:
+            RulesData.rules = rules_file.read()
+    except FileNotFoundError:
+        pass
+
     AdminsSettings.load_admins()
 
     register_all_handlers(dp)
