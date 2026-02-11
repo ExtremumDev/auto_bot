@@ -248,7 +248,7 @@ async def send_user_cars(c: types.CallbackQuery, db_session: AsyncSession, *args
             "Выберите автомобиль",
             reply_markup=types.InlineKeyboardMarkup(
                 inline_keyboard=[
-                    [types.InlineKeyboardButton(text=c, callback_data=f"showcar_{c.id}")]
+                    [types.InlineKeyboardButton(text=str(c), callback_data=f"showcar_{c.id}")]
                     for c in user.cars
                 ]
             )
