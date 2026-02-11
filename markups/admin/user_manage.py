@@ -12,6 +12,12 @@ def get_main_user_manage_markup(user_id, is_user_blocked: bool, is_user_admin: b
             ],
             [
                 InlineKeyboardButton(
+                    text="Посмотреть автмобили",
+                    callback_data=f"showcars_{user_id}"
+                )
+            ],
+            [
+                InlineKeyboardButton(
                     text="🔄 Разблокировать",
                     callback_data=f"unblockuser_{user_id}"
                 ) if is_user_blocked else InlineKeyboardButton(

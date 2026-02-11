@@ -1,5 +1,17 @@
 from typing import List
 
+from utils.enums import CarClass
+
+
+def get_car_description(brand: str, model: str, release_year: int, car_number: str, sts_series: str, sts_number: str, car_class: CarClass):
+    return f"""
+{brand} {model}. {car_class}
+
+Год выпуска: {release_year}
+
+Номер машины: {car_number}
+СТС серия, номер: {sts_series} {sts_number}
+"""
 
 
 def get_user_profile_descr(is_drive: bool, is_drive_confirmed: bool, cars: list) -> str:

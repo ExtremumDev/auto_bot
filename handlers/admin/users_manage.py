@@ -5,15 +5,15 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.strategy import FSMStrategy
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from config import AdminsSettings, PASSPORTS_PHOTO_PATH, DRIVE_LICENSES_PATH
-from database.dao import UserDAO, DriverDAO
+from config import AdminsSettings, PASSPORTS_PHOTO_PATH, DRIVE_LICENSES_PATH, CAR_PHOTO_PATH, CAR_VIDEO_PATH
+from database.dao import UserDAO, DriverDAO, CarDAO
 from database.utils import connection
 from filters.users import AdminFilter, MainAdminFilter
 from fsm.admin.users_manage import ConfirmAdministratorFSM
 from markups.admin.user_manage import get_main_user_manage_markup, get_approve_form_markup
 from markups.user.profile import get_forms_list_markup
 from utils.paging.users_paging import UsersPaging
-from utils.text import get_user_profile_descr, get_driver_form_text
+from utils.text import get_user_profile_descr, get_driver_form_text, get_car_description
 
 
 @connection
@@ -239,6 +239,52 @@ async def send_form_version(c: types.CallbackQuery, db_session: AsyncSession, *a
     )
 
 
+@connection
+async def send_user_cars(c: types.CallbackQuery, db_session: AsyncSession, *args):
+    user = await UserDAO.get_user_with_cars(session=db_session, id=int(c.data.split('_')[1]))
+
+    if user.cars:
+        await c.message.answer(
+            "Выберите автомобиль",
+            reply_markup=types.InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [types.InlineKeyboardButton(text=c, callback_data=f"showcar_{c.id}")]
+                    for c in user.cars
+                ]
+            )
+        )
+        await c.answer()
+    else:
+        await c.answer("У пользовтеля нет зарегистрированных автомобилей")
+
+
+@connection
+async def send_car_info(c: types.CallbackQuery, db_session: AsyncSession, *args):
+    car = await CarDAO.get_obj(session=db_session, id=int(c.data.split('_')[1]))
+
+    await c.message.answer(
+        text=get_car_description(
+            brand=car.brand, model=car.model, release_year=car.release_year, car_number=car.car_number,
+            sts_series=car.sts_series, sts_number=car.sts_number, car_class=car.car_class
+        )
+    )
+
+    await c.message.answer_photo(
+        photo=types.FSInputFile(
+            CAR_PHOTO_PATH / car.photo
+        ),
+        caption="Фото автомобиля"
+    )
+
+    await c.message.answer_video_note(
+        video_note=types.FSInputFile(
+            CAR_VIDEO_PATH / car.video
+        )
+    )
+
+    await c.answer()
+
+
 def register_users_manage_handers(dp: Dispatcher):
     dp.callback_query.register(send_users_list, F.data == "users_manage", AdminFilter())
     UsersPaging.register_paging_handlers(dp, 'um')
@@ -257,3 +303,6 @@ def register_users_manage_handers(dp: Dispatcher):
 
     dp.callback_query.register(send_user_forms_history, F.data.startswith("showformh_"), AdminFilter())
     dp.callback_query.register(send_form_version, F.data.startswith("showformvers_"), AdminFilter())
+
+    dp.callback_query.register(send_user_cars, F.data.startswith("showcars_"))
+    dp.callback_query.register(send_car_info, F.data.startswith("showcar_"))

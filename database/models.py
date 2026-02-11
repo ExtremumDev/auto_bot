@@ -108,6 +108,9 @@ class Car(Base):
     user: Mapped["User"] = relationship("User")
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
+    def __str__(self):
+        return f"{self.brand} {self.model} - {self.car_number}"
+
 
 class CrossCityOrder(Base):
     from_city: Mapped[str] = mapped_column(String(150))
