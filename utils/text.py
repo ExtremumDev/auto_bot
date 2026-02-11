@@ -10,7 +10,7 @@ def get_car_description(brand: str, model: str, release_year: int, car_number: s
 Год выпуска: {release_year}
 
 Номер машины: {car_number}
-СТС серия, номер: {sts_series} {sts_number}
+СТС серия, номер: {sts_series if sts_series else ''} {sts_number}
 """
 
 
