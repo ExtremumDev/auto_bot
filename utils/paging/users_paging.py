@@ -28,6 +28,10 @@ class UsersPaging(Paging):
             inline_keyboard=[]
         )
 
+        users_list_markup.inline_keyboard.append(
+            [InlineKeyboardButton(text="🔍 Поиск по имени пользователя")]
+        )
+
         for u in self.queryset:
             users_list_markup.inline_keyboard.append(
                 [
