@@ -6,7 +6,7 @@ from sqlalchemy.orm import (
     DeclarativeBase, declared_attr, Mapped, mapped_column, relationship
 )
 from sqlalchemy.ext.asyncio import AsyncAttrs
-from sqlalchemy import BigInteger, func, String, Boolean, ForeignKey, Enum
+from sqlalchemy import BigInteger, func, String, Boolean, ForeignKey, Enum, Null
 
 from utils.enums import CarClass, UserType, OrderType, OrderStatus, CrossCityOrderSpeed
 from utils.text import get_cross_city_order_description
@@ -208,6 +208,8 @@ class Order(Base):
 
     free_order_id: Mapped[int] = mapped_column(ForeignKey("free_orders.id"), nullable=True)
     free_order: Mapped["FreeOrder"] = relationship("FreeOrder", lazy="joined", back_populates="order")
+
+    info_message_id: Mapped[int] = mapped_column(BigInteger, nullable=True, server_default=Null())
 
     @property
     def full_date(self):

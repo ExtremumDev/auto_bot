@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.dao import OrderDAO, UserDAO
 from database.utils import connection
 from fsm.user.order import PlaceOrderFSM, DeliveryOrderFSM, SoberDriverFSM, FreeOrderFSM
+from handlers.admin.users_manage import ask_confirm_administrator
 from markups.user.order import order_type_markup, get_accept_order_markup, get_manage_order_markup
 from utils.enums import OrderType
 from utils.utils import check_user_blocked
@@ -266,14 +267,15 @@ async def post_order(bot: Bot, order, db_session: AsyncSession):
     users = await UserDAO.get_drivers(session=db_session)
 
     for u in users:
-        try:
-            await bot.send_message(
-                chat_id=u.telegram_id,
-                text=order.get_description(),
-                reply_markup=get_accept_order_markup(order.id)
-            )
-        except TelegramForbiddenError:
-            continue
+        if u.id != order.creator.id:
+            try:
+                await bot.send_message(
+                    chat_id=u.telegram_id,
+                    text=order.get_description(),
+                    reply_markup=get_accept_order_markup(order.id)
+                )
+            except TelegramForbiddenError:
+                continue
 
 
 @connection
