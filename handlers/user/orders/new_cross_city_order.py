@@ -108,7 +108,7 @@ async def handle_order_speed(c: types.CallbackQuery, state: FSMContext):
         )
 
     try:
-        await c.bot.delete_message(chat_id=c.chat.id, message_id=(await state.get_data())['prev_message'])
+        await c.bot.delete_message(chat_id=c.message.chat.id, message_id=(await state.get_data())['prev_message'])
     except TelegramBadRequest:
         pass
 
@@ -190,7 +190,7 @@ async def handle_car_class(c: types.CallbackQuery, state: FSMContext):
     await c.answer()
 
     try:
-        await c.bot.delete_message(chat_id=c.chat.id, message_id=(await state.get_data())['prev_message'])
+        await c.bot.delete_message(chat_id=c.message.chat.id, message_id=(await state.get_data())['prev_message'])
     except TelegramBadRequest:
         pass
 
