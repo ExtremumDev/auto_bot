@@ -38,11 +38,6 @@ async def start_city_order(c: types.CallbackQuery, state: FSMContext, db_session
 
     await c.answer()
 
-    try:
-        await c.bot.delete_message(chat_id=c.chat.id, message_id=(await state.get_data())['prev_message'])
-    except TelegramBadRequest:
-        pass
-
     await state.update_data(prev_message=message.message_id)
 
 
