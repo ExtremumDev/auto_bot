@@ -150,6 +150,10 @@ async def accept_order(c: types.CallbackQuery, db_session: AsyncSession, *args):
                     f"Заказ был принят. Чат с создателем заказа @{order.creator.telegram_username}"
                 )
 
+                if user.telegram_username != c.from_user.username:
+                    user.telegram_username = c.from_user.username
+                    await db_session.commit()
+
                 try:
                     reply = None
                     if order.info_message_id:

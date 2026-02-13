@@ -90,6 +90,11 @@ async def handle_city_description(m: types.Message, state: FSMContext, db_sessio
         settlement=s_data['settlement'],
         description=s_data['description']
     )
+
+    if order.creator.telegram_username != m.from_user.username:
+        order.creator.telegram_username = m.from_user.username
+        await db_session.commit()
+
     await post_order(bot=m.bot, order=order, db_session=db_session)
 
     await m.answer(
@@ -164,6 +169,10 @@ async def handle_delivery_description(m: types.Message, state: FSMContext, db_se
         settlement=s_data['settlement'],
         description=s_data['description']
     )
+
+    if order.creator.telegram_username != m.from_user.username:
+        order.creator.telegram_username = m.from_user.username
+        await db_session.commit()
 
     await post_order(bot=m.bot, order=order, db_session=db_session)
     await m.answer(
@@ -252,6 +261,10 @@ async def handle_sdriver_description(m: types.Message, state: FSMContext, db_ses
         description=s_data['description']
     )
 
+    if order.creator.telegram_username != m.from_user.username:
+        order.creator.telegram_username = m.from_user.username
+        await db_session.commit()
+
     await post_order(bot=m.bot, order=order, db_session=db_session)
 
     await m.answer(
@@ -332,6 +345,10 @@ async def handle_free_date(m: types.Message, state: FSMContext, db_session: Asyn
         description=s_data['description'],
         price=s_data['price']
     )
+
+    if order.creator.telegram_username != m.from_user.username:
+        order.creator.telegram_username = m.from_user.username
+        await db_session.commit()
 
     await post_order(bot=m.bot, order=order, db_session=db_session)
 

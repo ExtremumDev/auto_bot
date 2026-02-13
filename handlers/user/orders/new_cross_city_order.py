@@ -215,6 +215,10 @@ async def handle_description(m: types.Message, state: FSMContext, db_session: As
         reply_markup=get_manage_order_markup(order.id)
     )
 
+    if order.creator.telegram_username != m.from_user.username:
+        order.creator.telegram_username = m.from_user.username
+        await db_session.commit()
+
     await post_order(m.bot, order=order, db_session=db_session)
 
 
