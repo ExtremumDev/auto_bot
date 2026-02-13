@@ -50,6 +50,7 @@ async def handle_city_settlement(m: types.Message, state: FSMContext):
     )
 
     try:
+        await m.delete()
         await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
     except TelegramBadRequest:
         pass
@@ -68,6 +69,7 @@ async def handle_city_price(m: types.Message, state: FSMContext):
         )
 
         try:
+            await m.delete()
             await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
         except TelegramBadRequest:
             pass
@@ -88,6 +90,7 @@ async def handle_city_date(m: types.Message, state: FSMContext):
     )
 
     try:
+        await m.delete()
         await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
     except TelegramBadRequest:
         pass
@@ -162,6 +165,7 @@ async def handle_delivery_settlement(m: types.Message, state: FSMContext):
     )
 
     try:
+        await m.delete()
         await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
     except TelegramBadRequest:
         pass
@@ -177,6 +181,7 @@ async def handle_delivery_price(m: types.Message, state: FSMContext):
         message = await m.answer("Введите дату и время заказа")
 
         try:
+            await m.delete()
             await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
         except TelegramBadRequest:
             pass
@@ -197,6 +202,7 @@ async def handle_delivery_date(m: types.Message, state: FSMContext):
     )
 
     try:
+        await m.delete()
         await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
     except TelegramBadRequest:
         pass
@@ -269,6 +275,7 @@ async def handle_from(m: types.Message, state: FSMContext):
     )
 
     try:
+        await m.delete()
         await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
     except TelegramBadRequest:
         pass
@@ -285,6 +292,7 @@ async def handle_destination(m: types.Message, state: FSMContext):
     )
 
     try:
+        await m.delete()
         await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
     except TelegramBadRequest:
         pass
@@ -303,6 +311,7 @@ async def handle_sdriver_price(m: types.Message, state: FSMContext):
         )
 
         try:
+            await m.delete()
             await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
         except TelegramBadRequest:
             pass
@@ -323,6 +332,7 @@ async def handle_sdriver_date(m: types.Message, state: FSMContext):
     )
 
     try:
+        await m.delete()
         await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
     except TelegramBadRequest:
         pass
@@ -410,6 +420,7 @@ async def handle_free_description(m: types.Message, state: FSMContext):
     )
 
     try:
+        await m.delete()
         await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
     except TelegramBadRequest:
         pass
@@ -429,6 +440,7 @@ async def handle_free_price(m: types.Message, state: FSMContext):
         )
 
         try:
+            await m.delete()
             await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
         except TelegramBadRequest:
             pass
