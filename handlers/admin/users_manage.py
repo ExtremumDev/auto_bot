@@ -315,7 +315,7 @@ async def search_users(m: types.Message, state: FSMContext, db_session: AsyncSes
         )
     else:
         await m.answer(
-            "Пользователь с таки именем не найден"
+            "Пользователь с таким именем не найден"
         )
 
 
