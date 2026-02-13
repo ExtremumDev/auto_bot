@@ -12,7 +12,7 @@ from markups.admin.user_manage import get_moderate_driver_markup
 from markups.user.profile import get_forms_list_markup, form_edition_markup
 from utils.messaging import send_message_to_admins
 from utils.text import get_driver_form_text
-from utils.utils import check_and_save_photo
+from utils.utils import check_and_save_photo, get_user_form_field_name
 
 
 @connection
@@ -135,8 +135,11 @@ async def save_new_driver_form(user_id: int, data, db_session: AsyncSession):
     user = await UserDAO.get_obj(session=db_session, telegram_id=user_id)
     driver = user.driver
 
+    changes_info_text = "Изменено:"
+
     for k, v in data.items():
         driver.__setattr__(k, v)
+        changes_info_text += f"\n- {get_user_form_field_name(k)}"
 
     new_driver = await DriverDAO.add(
         session=db_session,

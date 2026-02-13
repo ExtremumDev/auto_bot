@@ -93,3 +93,21 @@ async def check_and_save_video_message(message: types.Message, save_path: Path, 
         )
     return False
 
+
+def get_user_form_field_name(key: str):
+    match key:
+        case "passport_number":
+            return "Номер паспорта"
+        case "passport_photo":
+            return "Фото паспорта"
+        case "license_number":
+            return "Номер водительских прав"
+        case "license_photo_2", "license_photo_1":
+            return "Фото водительских прав"
+        case "name":
+            return "ФИО"
+        case "phone":
+            return "Номер телефона"
+        case "":
+            return " "
+
