@@ -169,6 +169,7 @@ async def accept_order(c: types.CallbackQuery, db_session: AsyncSession, *args):
                 except TelegramBadRequest:
                     pass
                 await db_session.commit()
+                await c.answer()
             else:
                 await c.answer("Вы уже принимали этот заказ")
     else:

@@ -135,7 +135,7 @@ async def save_new_driver_form(user_id: int, data, db_session: AsyncSession):
     user = await UserDAO.get_obj(session=db_session, telegram_id=user_id)
     driver = user.driver
 
-    changes_info_text = "Изменено:"
+    changes_info_text = "\nИзменено:"
 
     for k, v in data.items():
         driver.__setattr__(k, v)
@@ -160,7 +160,7 @@ async def save_new_driver_form(user_id: int, data, db_session: AsyncSession):
     await db_session.flush((user,))
 
     await send_message_to_admins(
-        message="Пользователь отредактировал анкету, ожидается модерация",
+        message="Пользователь отредактировал анкету, ожидается модерация" + changes_info_text,
         reply_markup=get_moderate_driver_markup(user.id)
 
     )
