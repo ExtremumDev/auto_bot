@@ -108,6 +108,6 @@ def get_user_form_field_name(key: str):
             return "ФИО"
         case "phone":
             return "Номер телефона"
-        case "":
+        case:
             return " "
 
