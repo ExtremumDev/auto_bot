@@ -70,13 +70,13 @@ async def handle_order_speed(c: types.CallbackQuery, state: FSMContext):
     if order_speed == 2:
         await state.set_state(CrossCityOrderFSM.date_state)
         await c.message.answer(
-            "Укажите дату поездки"
+            "Укажите дату начала поездки"
         )
     else:
         await state.set_state(CrossCityOrderFSM.time_state)
 
         await c.message.answer(
-            "Укажите время поездки"
+            "Укажите время начала поездки"
         )
 
 
@@ -87,7 +87,7 @@ async def handle_date(m: types.Message, state: FSMContext):
     await state.update_data(date=date)
 
     await m.answer(
-        "Укажите время поездки"
+        "Укажите время начала поездки"
     )
 
 
@@ -153,7 +153,7 @@ async def handle_rf_distance(m: types.Message, state: FSMContext):
 
         await state.set_state(CrossCityOrderFSM.price_state)
         await m.answer(
-            "Введите цену за поездку"
+            "Введите цену за поездку водителю на руки без учёта стоимости платных дорог"
         )
 
     except ValueError:
@@ -170,7 +170,7 @@ async def handle_price(m: types.Message, state: FSMContext):
 
         await state.set_state(CrossCityOrderFSM.description_state)
         await m.answer(
-            "Введите свободный комментарий о поездке"
+            "Введите свободный комментарий о поездке или напишите \"Нет\""
         )
 
     except ValueError:

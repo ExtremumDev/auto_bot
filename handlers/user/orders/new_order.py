@@ -285,7 +285,7 @@ async def start_free_order(c: types.CallbackQuery, state: FSMContext, db_session
         return
     await state.set_state(FreeOrderFSM.description_state)
     await c.message.answer(
-        "Введите детали заказа или напишите"
+        "Введите детали заказа"
     )
 
 
