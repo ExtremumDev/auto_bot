@@ -154,6 +154,11 @@ async def accept_order(c: types.CallbackQuery, db_session: AsyncSession, *args):
                     user.telegram_username = c.from_user.username
                     await db_session.commit()
 
+                if c.from_user.username is None:
+                    await c.answer(
+                        "❗️ Вы не указали имя пользвотеля в телеграмме, связь с другими пользователями бота будет невозможна"
+                    )
+
                 try:
                     reply = None
                     if order.info_message_id:

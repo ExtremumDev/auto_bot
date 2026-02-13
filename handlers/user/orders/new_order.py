@@ -513,10 +513,6 @@ async def handle_free_date(m: types.Message, state: FSMContext, db_session: Asyn
         await m.answer(
             "❗️ Вы не указали имя пользвотеля в телеграмме, связь с другими пользователями бота будет невозможна"
         )
-    if m.from_user.username is None:
-        await m.answer(
-            "❗️ Вы не указали имя пользвотеля в телеграмме, связь с другими пользователями бота будет невозможна"
-        )
 
     await post_order(bot=m.bot, order=order, db_session=db_session)
 
