@@ -32,20 +32,35 @@ async def start_city_order(c: types.CallbackQuery, state: FSMContext, db_session
         return
 
     await state.set_state(PlaceOrderFSM.settlement_state)
-    await c.message.answer(
+    message = await c.message.answer(
         "Укажите название населенного пункта"
     )
 
+    await state.update_data(prev_message=message.message_id)
+
     await c.answer()
+
+    try:
+        await c.message.delete()
+    except TelegramBadRequest:
+        pass
 
 
 async def handle_city_settlement(m: types.Message, state: FSMContext):
     await state.set_state(PlaceOrderFSM.price_state)
     await state.update_data(settlement=m.text.strip())
 
-    await m.answer(
+    message = await m.answer(
         "Введите цену за заказ"
     )
+
+    await state.update_data(prev_message=message.message_id)
+
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
 
 
 async def handle_city_price(m: types.Message, state: FSMContext):
@@ -54,9 +69,17 @@ async def handle_city_price(m: types.Message, state: FSMContext):
         await state.set_state(PlaceOrderFSM.date_state)
         await state.update_data(price=price)
 
-        await m.answer(
+        message = await m.answer(
             "Введите дату и время заказа"
         )
+
+        await state.update_data(prev_message=message.message_id)
+
+        try:
+            await m.delete()
+            await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+        except TelegramBadRequest:
+            pass
     except ValueError:
         await m.answer(
             "Необходимо ввести число! Попробуйте еще раз"
@@ -67,9 +90,17 @@ async def handle_city_date(m: types.Message, state: FSMContext):
     await state.set_state(PlaceOrderFSM.description_state)
     await state.update_data(date=m.text)
 
-    await m.answer(
+    message = await m.answer(
         "Укажите детали заказа или напишите \"Нет\""
     )
+
+    await state.update_data(prev_message=message.message_id)
+
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
 
 
 
@@ -105,6 +136,12 @@ async def handle_city_description(m: types.Message, state: FSMContext, db_sessio
         reply_markup=get_manage_order_markup(order.id)
     )
 
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
+
 
 @connection
 async def start_deliver_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
@@ -115,9 +152,11 @@ async def start_deliver_order(c: types.CallbackQuery, state: FSMContext, db_sess
         return
     await state.set_state(DeliveryOrderFSM.settlement_state)
 
-    await c.message.answer(
+    message = await c.message.answer(
         "Введите населенный пункт доставки. Или укажите точку А и точку Б"
     )
+
+    await state.update_data(prev_message=message.message_id)
 
     await c.answer()
 
@@ -126,9 +165,17 @@ async def handle_delivery_settlement(m: types.Message, state: FSMContext):
     await state.set_state(DeliveryOrderFSM.price_state)
     await state.update_data(settlement=m.text)
 
-    await m.answer(
+    message = await m.answer(
         "Введите цену за заказ"
     )
+
+    await state.update_data(prev_message=message.message_id)
+
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
 
 
 async def handle_delivery_price(m: types.Message, state: FSMContext):
@@ -136,7 +183,15 @@ async def handle_delivery_price(m: types.Message, state: FSMContext):
         price = m.text
         await state.set_state(DeliveryOrderFSM.date_state)
         await state.update_data(price=price)
-        await m.answer("Введите дату и время заказа")
+        message = await m.answer("Введите дату и время заказа")
+
+        await state.update_data(prev_message=message.message_id)
+
+        try:
+            await m.delete()
+            await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+        except TelegramBadRequest:
+            pass
     except ValueError:
         await m.answer(
             "Необходимо ввести число, попробуйте еще раз"
@@ -147,9 +202,17 @@ async def handle_delivery_date(m: types.Message, state: FSMContext):
     await state.set_state(DeliveryOrderFSM.description_state)
     await state.update_data(date=m.text)
 
-    await m.answer(
+    message = await m.answer(
         "Укажите детали заказа или напишите \"Нет\""
     )
+
+    await state.update_data(prev_message=message.message_id)
+
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
 
 
 @connection
@@ -183,6 +246,12 @@ async def handle_delivery_description(m: types.Message, state: FSMContext, db_se
         reply_markup=get_manage_order_markup(order.id)
     )
 
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
+
 
 @connection
 async def start_sober_driver_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
@@ -193,9 +262,11 @@ async def start_sober_driver_order(c: types.CallbackQuery, state: FSMContext, db
         return
     await state.set_state(SoberDriverFSM.from_state)
 
-    await c.message.answer(
+    message = await c.message.answer(
         "Укажите точку начала пути"
     )
+
+    await state.update_data(prev_message=message.message_id)
 
     await c.answer()
 
@@ -204,18 +275,34 @@ async def handle_from(m: types.Message, state: FSMContext):
     await state.set_state(SoberDriverFSM.dest_state)
     await state.update_data(start_point=m.text)
 
-    await m.answer(
+    message = await m.answer(
         "Теперь укажите конечную точку пути"
     )
+
+    await state.update_data(prev_message=message.message_id)
+
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
 
 
 async def handle_destination(m: types.Message, state: FSMContext):
     await state.set_state(SoberDriverFSM.price_state)
     await state.update_data(end_point=m.text)
 
-    await m.answer(
+    message = await m.answer(
         "Введите цену за заказ"
     )
+
+    await state.update_data(prev_message=message.message_id)
+
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
 
 
 async def handle_sdriver_price(m: types.Message, state: FSMContext):
@@ -224,9 +311,17 @@ async def handle_sdriver_price(m: types.Message, state: FSMContext):
         await state.set_state(SoberDriverFSM.date_state)
         await state.update_data(price=price)
 
-        await m.answer(
+        message = await m.answer(
             "Введите дату и время заказа"
         )
+
+        await state.update_data(prev_message=message.message_id)
+
+        try:
+            await m.delete()
+            await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+        except TelegramBadRequest:
+            pass
     except ValueError:
         await m.answer(
             "Необходимо ввести число! Попробуйте еще раз"
@@ -237,9 +332,17 @@ async def handle_sdriver_date(m: types.Message, state: FSMContext):
     await state.set_state(SoberDriverFSM.description_state)
     await state.update_data(date=m.text)
 
-    await m.answer(
+    message = await m.answer(
         "Укажите детали заказа или напишите \"Нет\""
     )
+
+    await state.update_data(prev_message=message.message_id)
+
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
 
 
 @connection
@@ -275,6 +378,12 @@ async def handle_sdriver_description(m: types.Message, state: FSMContext, db_ses
         reply_markup=get_manage_order_markup(order.id)
     )
 
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
+
 
 async def post_order(bot: Bot, order, db_session: AsyncSession):
     users = await UserDAO.get_drivers(session=db_session)
@@ -299,18 +408,29 @@ async def start_free_order(c: types.CallbackQuery, state: FSMContext, db_session
         await c.answer("Вы не имеете права публикоавть заказы")
         return
     await state.set_state(FreeOrderFSM.description_state)
-    await c.message.answer(
+
+    message = await c.message.answer(
         "Введите детали заказа"
     )
+
+    await state.update_data(prev_message=message.message_id)
 
 
 async def handle_free_description(m: types.Message, state: FSMContext):
     await state.set_state(FreeOrderFSM.price_state)
     await state.update_data(description=m.text[:199])
 
-    await m.answer(
+    message = await m.answer(
         "Введите цену за заказ"
     )
+
+    await state.update_data(prev_message=message.message_id)
+
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
 
 
 async def handle_free_price(m: types.Message, state: FSMContext):
@@ -320,9 +440,17 @@ async def handle_free_price(m: types.Message, state: FSMContext):
         await state.set_state(FreeOrderFSM.date_state)
         await state.update_data(price=price)
 
-        await m.answer(
+        message = await m.answer(
             "Введите дату и время заказа"
         )
+
+        await state.update_data(prev_message=message.message_id)
+
+        try:
+            await m.delete()
+            await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+        except TelegramBadRequest:
+            pass
     except ValueError:
         await m.answer(
             "Необходимо ввести число! Попробуйте еще раз"
@@ -359,6 +487,12 @@ async def handle_free_date(m: types.Message, state: FSMContext, db_session: Asyn
         text=order.get_description(),
         reply_markup=get_manage_order_markup(order.id)
     )
+
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
 
 
 

@@ -1,4 +1,5 @@
 from aiogram import types, Dispatcher, F
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,9 +29,12 @@ async def start_order(c: types.CallbackQuery, state: FSMContext, db_session: Asy
         case OrderType.CROSS_CITY:
             await state.set_state(CrossCityOrderFSM.from_state)
 
-            await c.message.answer(
+            message = await c.message.answer(
                 "Укажите название населённого пункта начала пути и по возможности, район(улицу, координаты)"
             )
+
+            await state.update_data(prev_message=message.message_id)
+
 
     await c.answer()
 
@@ -39,28 +43,52 @@ async def handle_from(m: types.Message, state: FSMContext):
     await state.set_state(CrossCityOrderFSM.destination_state)
     await state.update_data(from_city=m.text.strip())
 
-    await m.answer(
+    message = await m.answer(
         "Укажите название населённого пункта назначения и по возможности, район(улицу, координаты)"
     )
+
+    await state.update_data(prev_message=message.message_id)
+
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
 
 
 async def handle_destination(m: types.Message, state: FSMContext):
     await state.set_state(CrossCityOrderFSM.intermediate_points_state)
     await state.update_data(dest_city=m.text.strip())
 
-    await m.answer(
+    message = await m.answer(
         "Укажите дополнительные промежуточные точки маршрута или напишите \"Нет\""
     )
+
+    await state.update_data(prev_message=message.message_id)
+
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
 
 
 async def handle_intermediate_points(m: types.Message, state: FSMContext):
     await state.set_state(CrossCityOrderFSM.speed_state)
     await state.update_data(intermediate_points=m.text.strip())
 
-    await m.answer(
+    message = await m.answer(
         "Выберите тип заказа",
         reply_markup=order_speed_markup
     )
+
+    await state.update_data(prev_message=message.message_id)
+
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
 
 
 async def handle_order_speed(c: types.CallbackQuery, state: FSMContext):
@@ -69,15 +97,22 @@ async def handle_order_speed(c: types.CallbackQuery, state: FSMContext):
 
     if order_speed == 2:
         await state.set_state(CrossCityOrderFSM.date_state)
-        await c.message.answer(
+        message = await c.message.answer(
             "Укажите дату начала поездки"
         )
     else:
         await state.set_state(CrossCityOrderFSM.time_state)
 
-        await c.message.answer(
+        message = await c.message.answer(
             "Укажите время начала поездки"
         )
+
+    await state.update_data(prev_message=message.message_id)
+
+    try:
+        await c.bot.delete_message(chat_id=c.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
 
 
 async def handle_date(m: types.Message, state: FSMContext):
@@ -86,18 +121,34 @@ async def handle_date(m: types.Message, state: FSMContext):
     await state.set_state(CrossCityOrderFSM.time_state)
     await state.update_data(date=date)
 
-    await m.answer(
+    message = await m.answer(
         "Укажите время начала поездки"
     )
+
+    await state.update_data(prev_message=message.message_id)
+
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
 
 
 async def handle_time(m: types.Message, state: FSMContext):
     await state.set_state(CrossCityOrderFSM.passengers_state)
     await state.update_data(time=m.text.strip())
 
-    await m.answer(
+    message = await m.answer(
         "Введите количество пассажиров"
     )
+
+    await state.update_data(prev_message=message.message_id)
+
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
 
 
 async def handle_passengers_count(m: types.Message, state: FSMContext):
@@ -107,10 +158,18 @@ async def handle_passengers_count(m: types.Message, state: FSMContext):
         await state.set_state(CrossCityOrderFSM.car_class_state)
         await state.update_data(passengers_count=passengers_count)
 
-        await  m.answer(
+        message = await  m.answer(
             "Выберите необходимый класс автомобиля",
             reply_markup=CarClass.get_choice_by_passengers_number(passengers_count)
         )
+
+        await state.update_data(prev_message=message.message_id)
+
+        try:
+            await m.delete()
+            await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+        except TelegramBadRequest:
+            pass
 
     except ValueError:
         await m.answer(
@@ -124,11 +183,18 @@ async def handle_car_class(c: types.CallbackQuery, state: FSMContext):
     await state.set_state(CrossCityOrderFSM.nt_distance_state)
     await state.update_data(car_class=CarClass(car_class_id))
 
-    await c.message.answer(
+    message = await c.message.answer(
         "Введите километраж по НТ(новые территории), если нет - 0"
     )
 
+    await state.update_data(prev_message=message.message_id)
+
     await c.answer()
+    try:
+        await c.bot.delete_message(chat_id=c.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
+
 
 
 async def handle_new_territory_distance(m: types.Message, state: FSMContext):
@@ -137,9 +203,17 @@ async def handle_new_territory_distance(m: types.Message, state: FSMContext):
         await state.update_data(nt_distance=distance)
 
         await state.set_state(CrossCityOrderFSM.rf_distance_state)
-        await m.answer(
+        message = await m.answer(
             "Укажите километраж по РФ, если нет - введите 0"
         )
+
+        await state.update_data(prev_message=message.message_id)
+
+        try:
+            await m.delete()
+            await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+        except TelegramBadRequest:
+            pass
 
     except ValueError:
         await m.answer(
@@ -152,9 +226,18 @@ async def handle_rf_distance(m: types.Message, state: FSMContext):
         await state.update_data(rf_distance=distance)
 
         await state.set_state(CrossCityOrderFSM.price_state)
-        await m.answer(
+
+        message = await m.answer(
             "Введите цену за поездку водителю на руки без учёта стоимости платных дорог"
         )
+
+        await state.update_data(prev_message=message.message_id)
+
+        try:
+            await m.delete()
+            await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+        except TelegramBadRequest:
+            pass
 
     except ValueError:
         await m.answer(
@@ -169,9 +252,17 @@ async def handle_price(m: types.Message, state: FSMContext):
         await state.update_data(price=price)
 
         await state.set_state(CrossCityOrderFSM.description_state)
-        await m.answer(
+        message = await m.answer(
             "Введите свободный комментарий о поездке или напишите \"Нет\""
         )
+
+        await state.update_data(prev_message=message.message_id)
+
+        try:
+            await m.delete()
+            await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+        except TelegramBadRequest:
+            pass
 
     except ValueError:
         await m.answer(
@@ -220,6 +311,13 @@ async def handle_description(m: types.Message, state: FSMContext, db_session: As
         await db_session.commit()
 
     await post_order(m.bot, order=order, db_session=db_session)
+
+
+    try:
+        await m.delete()
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+    except TelegramBadRequest:
+        pass
 
 
 
