@@ -1,4 +1,5 @@
 from aiogram import types, Dispatcher, F
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 
@@ -21,6 +22,11 @@ async def to_main_menu(m: types.Message, state: FSMContext):
         main_menu_message,
         reply_markup=get_main_markup(m.from_user.id)
     )
+
+    try:
+        await m.delete()
+    except TelegramBadRequest:
+        pass
 
 
 async def send_rules(c: types.CallbackQuery):

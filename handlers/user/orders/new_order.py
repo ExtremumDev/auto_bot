@@ -130,6 +130,10 @@ async def handle_city_description(m: types.Message, state: FSMContext, db_sessio
     if order.creator.telegram_username != m.from_user.username:
         order.creator.telegram_username = m.from_user.username
         await db_session.commit()
+    if m.from_user.username is None:
+        await m.answer(
+            "❗️ Вы не указали имя пользвотеля в телеграмме, связь с другими пользователями бота будет невозможна"
+        )
 
     await post_order(bot=m.bot, order=order, db_session=db_session)
 
@@ -246,6 +250,10 @@ async def handle_delivery_description(m: types.Message, state: FSMContext, db_se
     if order.creator.telegram_username != m.from_user.username:
         order.creator.telegram_username = m.from_user.username
         await db_session.commit()
+    if m.from_user.username is None:
+        await m.answer(
+            "❗️ Вы не указали имя пользвотеля в телеграмме, связь с другими пользователями бота будет невозможна"
+        )
 
     await post_order(bot=m.bot, order=order, db_session=db_session)
     await m.answer(
@@ -382,6 +390,10 @@ async def handle_sdriver_description(m: types.Message, state: FSMContext, db_ses
     if order.creator.telegram_username != m.from_user.username:
         order.creator.telegram_username = m.from_user.username
         await db_session.commit()
+    if m.from_user.username is None:
+        await m.answer(
+            "❗️ Вы не указали имя пользвотеля в телеграмме, связь с другими пользователями бота будет невозможна"
+        )
 
     await post_order(bot=m.bot, order=order, db_session=db_session)
 
@@ -497,6 +509,14 @@ async def handle_free_date(m: types.Message, state: FSMContext, db_session: Asyn
     if order.creator.telegram_username != m.from_user.username:
         order.creator.telegram_username = m.from_user.username
         await db_session.commit()
+    if m.from_user.username is None:
+        await m.answer(
+            "❗️ Вы не указали имя пользвотеля в телеграмме, связь с другими пользователями бота будет невозможна"
+        )
+    if m.from_user.username is None:
+        await m.answer(
+            "❗️ Вы не указали имя пользвотеля в телеграмме, связь с другими пользователями бота будет невозможна"
+        )
 
     await post_order(bot=m.bot, order=order, db_session=db_session)
 

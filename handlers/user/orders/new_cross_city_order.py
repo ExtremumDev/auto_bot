@@ -315,6 +315,10 @@ async def handle_description(m: types.Message, state: FSMContext, db_session: As
     if order.creator.telegram_username != m.from_user.username:
         order.creator.telegram_username = m.from_user.username
         await db_session.commit()
+    if m.from_user.username is None:
+        await m.answer(
+            "❗️ Вы не указали имя пользвотеля в телеграмме, связь с другими пользователями бота будет невозможна"
+        )
 
     await post_order(m.bot, order=order, db_session=db_session)
 
