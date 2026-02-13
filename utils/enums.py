@@ -21,10 +21,12 @@ class CarClass(Enum):
     def get_choice_by_passengers_number(cls, passengers_number: int = 0):
         classes = []
 
-        if passengers_number < 7:
-            classes = [cls.BASE_CAR, cls.COMPACTVAN, cls.MINIVAN]
-        else:
+        if passengers_number >= 7:
             classes = [cls.MINIVAN]
+        elif passengers_number > 4:
+            classes = [cls.COMPACTVAN, cls.MINIVAN]
+        else:
+            classes = [cls.BASE_CAR, cls.COMPACTVAN, cls.MINIVAN]
 
         return InlineKeyboardMarkup(
             inline_keyboard=[
