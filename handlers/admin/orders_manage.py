@@ -15,7 +15,7 @@ async def send_orders_list(c: types.CallbackQuery, db_session: AsyncSession, *ar
     await paging.get_current_page()
 
     await c.message.answer(
-        text="Выберете заказ",
+        text="Выберете заказ для администрирования",
         reply_markup=paging.get_reply_markup()
     )
     await c.answer()
