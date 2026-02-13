@@ -38,6 +38,11 @@ async def start_order(c: types.CallbackQuery, state: FSMContext, db_session: Asy
 
     await c.answer()
 
+    try:
+        await c.message.delete()
+    except TelegramBadRequest:
+        pass
+
 
 async def handle_from(m: types.Message, state: FSMContext):
     await state.set_state(CrossCityOrderFSM.destination_state)
@@ -316,7 +321,7 @@ async def handle_description(m: types.Message, state: FSMContext, db_session: As
 
     try:
         await m.delete()
-        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=s_data['prev_message'])
     except TelegramBadRequest:
         pass
 

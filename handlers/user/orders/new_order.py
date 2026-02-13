@@ -22,6 +22,11 @@ async def send_order_types(c: types.CallbackQuery, state: FSMContext):
 
     await c.answer()
 
+    try:
+        await c.message.delete()
+    except TelegramBadRequest:
+        pass
+
 
 @connection
 async def start_city_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
@@ -39,6 +44,11 @@ async def start_city_order(c: types.CallbackQuery, state: FSMContext, db_session
     await c.answer()
 
     await state.update_data(prev_message=message.message_id)
+
+    try:
+        await c.message.delete()
+    except TelegramBadRequest:
+        pass
 
 
 async def handle_city_settlement(m: types.Message, state: FSMContext):
@@ -133,7 +143,7 @@ async def handle_city_description(m: types.Message, state: FSMContext, db_sessio
 
     try:
         await m.delete()
-        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=s_data['prev_message'])
     except TelegramBadRequest:
         pass
 
@@ -154,6 +164,11 @@ async def start_deliver_order(c: types.CallbackQuery, state: FSMContext, db_sess
     await state.update_data(prev_message=message.message_id)
 
     await c.answer()
+
+    try:
+        await c.message.delete()
+    except TelegramBadRequest:
+        pass
 
 
 async def handle_delivery_settlement(m: types.Message, state: FSMContext):
@@ -243,7 +258,7 @@ async def handle_delivery_description(m: types.Message, state: FSMContext, db_se
 
     try:
         await m.delete()
-        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=s_data['prev_message'])
     except TelegramBadRequest:
         pass
 
@@ -264,6 +279,11 @@ async def start_sober_driver_order(c: types.CallbackQuery, state: FSMContext, db
     await state.update_data(prev_message=message.message_id)
 
     await c.answer()
+
+    try:
+        await c.message.delete()
+    except TelegramBadRequest:
+        pass
 
 
 async def handle_from(m: types.Message, state: FSMContext):
@@ -375,7 +395,7 @@ async def handle_sdriver_description(m: types.Message, state: FSMContext, db_ses
 
     try:
         await m.delete()
-        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=s_data['prev_message'])
     except TelegramBadRequest:
         pass
 
@@ -409,6 +429,11 @@ async def start_free_order(c: types.CallbackQuery, state: FSMContext, db_session
     )
 
     await state.update_data(prev_message=message.message_id)
+
+    try:
+        await c.message.delete()
+    except TelegramBadRequest:
+        pass
 
 
 async def handle_free_description(m: types.Message, state: FSMContext):
@@ -485,7 +510,7 @@ async def handle_free_date(m: types.Message, state: FSMContext, db_session: Asyn
 
     try:
         await m.delete()
-        await m.bot.delete_message(chat_id=m.chat.id, message_id=(await state.get_data())['prev_message'])
+        await m.bot.delete_message(chat_id=m.chat.id, message_id=s_data['prev_message'])
     except TelegramBadRequest:
         pass
 
