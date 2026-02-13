@@ -160,7 +160,7 @@ async def save_new_driver_form(user_id: int, data, db_session: AsyncSession):
     await db_session.flush((user,))
 
     await send_message_to_admins(
-        message="Пользователь отредактировал анкету, ожидается модерация" + changes_info_text,
+        message=f"Пользователь @{user.telegram_username} отредактировал анкету, ожидается модерация" + changes_info_text,
         reply_markup=get_moderate_driver_markup(user.id)
 
     )
