@@ -29,7 +29,7 @@ class UsersPaging(Paging):
         )
 
         users_list_markup.inline_keyboard.append(
-            [InlineKeyboardButton(text="🔍 Поиск по имени пользователя")]
+            [InlineKeyboardButton(text="🔍 Поиск по имени пользователя", callback_data="search_users")]
         )
 
         for u in self.queryset:
