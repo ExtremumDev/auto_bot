@@ -88,6 +88,16 @@ class UserDAO(BaseDAO):
 
         return res.scalars().all()
 
+    @classmethod
+    async def find_user(cls, session: AsyncSession, username_prompt):
+        query = select(cls.model).filter_by(
+            telegram_username=username_prompt
+        )
+
+        res = await session.execute(query)
+
+        return res.scalar_one_or_none()
+
 
 class DriverDAO(BaseDAO):
     model = Driver

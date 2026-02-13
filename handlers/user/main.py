@@ -30,7 +30,13 @@ async def send_rules(c: types.CallbackQuery):
     await c.answer()
 
 
+async def cancel_action(c: types.CallbackQuery, state: FSMContext):
+    await state.clear()
+    await c.answer("Дейсвтие отменено")
+
+
 def register_main_handlers(dp: Dispatcher):
     dp.callback_query.register(to_main_menu_callback, F.data == "main_menu", StateFilter('*'))
     dp.message.register(to_main_menu, Command("menu"), StateFilter('*'))
     dp.callback_query.register(send_rules, F.data == "rules")
+    dp.callback_query.register(cancel_action, F.data == "cancel_action")

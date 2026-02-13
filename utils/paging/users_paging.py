@@ -32,7 +32,7 @@ class UsersPaging(Paging):
             users_list_markup.inline_keyboard.append(
                 [
                     InlineKeyboardButton(
-                        text=u.telegram_username if u.telegram_username else str(u.telegram_id),
+                        text=u.telegram_username if u.telegram_username else str(u.telegram_id) + " 🚫 " if u.is_blocked else " 🟢 ",
                         callback_data=f"usermanage_{u.id}"
                     )
                 ]

@@ -9,8 +9,9 @@ from config import AdminsSettings, PASSPORTS_PHOTO_PATH, DRIVE_LICENSES_PATH, CA
 from database.dao import UserDAO, DriverDAO, CarDAO
 from database.utils import connection
 from filters.users import AdminFilter, MainAdminFilter
-from fsm.admin.users_manage import ConfirmAdministratorFSM
+from fsm.admin.users_manage import ConfirmAdministratorFSM, UserSearchFSM
 from markups.admin.user_manage import get_main_user_manage_markup, get_approve_form_markup
+from markups.user.main import cancel_action_markup
 from markups.user.profile import get_forms_list_markup
 from utils.paging.users_paging import UsersPaging
 from utils.text import get_user_profile_descr, get_driver_form_text, get_car_description
@@ -285,6 +286,39 @@ async def send_car_info(c: types.CallbackQuery, db_session: AsyncSession, *args)
     await c.answer()
 
 
+async def start_users_searching(c: types.CallbackQuery, state: FSMContext):
+    await state.set_state(UserSearchFSM.username_state)
+
+    await c.message.answer(
+        "Введите имя пользователя",
+        reply_markup=cancel_action_markup
+    )
+    await c.answer()
+
+
+@connection
+async def search_users(m: types.Message, state: FSMContext, db_session: AsyncSession, *args):
+    await state.clear()
+
+    username = m.text.strip()
+
+    user = await UserDAO.find_user(session=db_session, username_prompt=username)
+
+    if user:
+        await m.answer(
+            f"Найден пользователь @{user.telegram_username}",
+            reply_markup=types.InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [types.InlineKeyboardButton(text="Посмотреть профиль", callback_data=f"usermanage_{user.id}")]
+                ]
+            )
+        )
+    else:
+        await m.answer(
+            "Пользователь с таки именем не найден"
+        )
+
+
 def register_users_manage_handers(dp: Dispatcher):
     dp.callback_query.register(send_users_list, F.data == "users_manage", AdminFilter())
     UsersPaging.register_paging_handlers(dp, 'um')
@@ -306,3 +340,6 @@ def register_users_manage_handers(dp: Dispatcher):
 
     dp.callback_query.register(send_user_cars, F.data.startswith("showcars_"))
     dp.callback_query.register(send_car_info, F.data.startswith("showcar_"))
+
+    dp.callback_query.register(start_users_searching, F.data == "search_users", AdminFilter())
+    dp.message.register(search_users, StateFilter(UserSearchFSM.username_state))

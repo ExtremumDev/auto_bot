@@ -49,3 +49,9 @@ start_markup = InlineKeyboardMarkup(
         [InlineKeyboardButton(text="Открыть главное меню", callback_data="main_menu")]
     ]
 )
+
+cancel_action_markup = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text="❌ Отменить", callback_data="cancel_action")]
+    ]
+)

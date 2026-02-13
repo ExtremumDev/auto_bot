@@ -35,6 +35,10 @@ class OrdersPaging(Paging):
                         InlineKeyboardButton(
                             text=o.get_order_name(),
                             callback_data=f"order_{o.id}"
+                        ),
+                        InlineKeyboardButton(
+                            text="❌",
+                            callback_data=f"delorder_{o.id}"
                         )
                     ]
                 )
