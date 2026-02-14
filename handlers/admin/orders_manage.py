@@ -37,7 +37,7 @@ async def send_order_card(c: types.CallbackQuery, db_session: AsyncSession, *arg
 """
 
         await c.message.answer(
-            text=order.get_description(),
+            text=text,
             reply_markup=get_manage_order_markup(order_id, False)
         )
         await c.answer()
