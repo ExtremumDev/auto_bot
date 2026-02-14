@@ -33,7 +33,7 @@ async def send_order_card(c: types.CallbackQuery, db_session: AsyncSession, *arg
 
         text += f"""
 \n\nСоздан: @{order.creator.telegram_username}
-Отдан: {'@' + order.executor.telegram_username if order.executor.telegram_username else 'N/A'}
+Отдан: {'@' + order.executor.telegram_username if order.executor and order.executor.telegram_username else 'N/A'}
 """
 
         await c.message.answer(

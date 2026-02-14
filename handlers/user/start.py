@@ -39,6 +39,11 @@ async def start_cmd(m: types.Message, state: FSMContext, db_session: AsyncSessio
             reply_markup=start_markup
         )
 
+        if not m.from_user.username:
+            await m.answer(
+                "❗️ Вы не указали имя пользвотеля в телеграмме, связь с другими пользователями бота будет невозможна"
+            )
+
 
 #-------------
 # REGISTRATION

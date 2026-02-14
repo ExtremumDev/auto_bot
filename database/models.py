@@ -33,7 +33,7 @@ class Base(AsyncAttrs, DeclarativeBase):
 
 class User(Base):
     telegram_id: Mapped[int] = mapped_column(BigInteger)
-    telegram_username: Mapped[str] = mapped_column(String(35))
+    telegram_username: Mapped[str] = mapped_column(String(35), nullable=True)
 
     user_type: Mapped[UserType] = mapped_column(Enum(UserType, name="user_type"), nullable=True)
 
