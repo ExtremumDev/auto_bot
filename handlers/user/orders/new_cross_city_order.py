@@ -20,7 +20,16 @@ async def start_order(c: types.CallbackQuery, state: FSMContext, db_session: Asy
 
     if user and (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
         await c.answer("Вы не имеете права публикоавть заказы")
-        return
+        return None
+    elif user.telegram_username != c.from_user.username:
+        if user.telegram_username is None:
+            user.telegram_username = c.from_user.username
+        else:
+            await c.answer(
+                "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
+                show_alert=True
+            )
+            return None
     order_type_number = int(c.data.split('_')[1])
 
     order_type = OrderType(order_type_number)
@@ -311,10 +320,6 @@ async def handle_description(m: types.Message, state: FSMContext, db_session: As
         text=order.get_description(),
         reply_markup=get_manage_order_markup(order.id)
     )
-
-    if order.creator.telegram_username != m.from_user.username:
-        order.creator.telegram_username = m.from_user.username
-        await db_session.commit()
     if m.from_user.username is None:
         await m.answer(
             "❗️ Вы не указали имя пользвотеля в телеграмме, связь с другими пользователями бота будет невозможна"

@@ -41,6 +41,15 @@ async def start_city_order(c: types.CallbackQuery, state: FSMContext, db_session
     if user and (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
         await c.answer("Вы не имеете права публикоавть заказы")
         return
+    elif user.telegram_username != c.from_user.username:
+        if user.telegram_username is None:
+            user.telegram_username = c.from_user.username
+        else:
+            await c.answer(
+                "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
+                show_alert=True
+            )
+            return None
 
     await state.set_state(PlaceOrderFSM.settlement_state)
     message = await c.message.answer(
@@ -133,9 +142,6 @@ async def handle_city_description(m: types.Message, state: FSMContext, db_sessio
         description=s_data['description']
     )
 
-    if order.creator.telegram_username != m.from_user.username:
-        order.creator.telegram_username = m.from_user.username
-        await db_session.commit()
     if m.from_user.username is None:
         await m.answer(
             "❗️ Вы не указали имя пользвотеля в телеграмме, связь с другими пользователями бота будет невозможна"
@@ -167,7 +173,16 @@ async def start_deliver_order(c: types.CallbackQuery, state: FSMContext, db_sess
 
     if user and (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
         await c.answer("Вы не имеете права публикоавть заказы")
-        return
+        return None
+    elif user.telegram_username != c.from_user.username:
+        if user.telegram_username is None:
+            user.telegram_username = c.from_user.username
+        else:
+            await c.answer(
+                "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
+                show_alert=True
+            )
+            return None
     await state.set_state(DeliveryOrderFSM.settlement_state)
 
     message = await c.message.answer(
@@ -255,10 +270,6 @@ async def handle_delivery_description(m: types.Message, state: FSMContext, db_se
         settlement=s_data['settlement'],
         description=s_data['description']
     )
-
-    if order.creator.telegram_username != m.from_user.username:
-        order.creator.telegram_username = m.from_user.username
-        await db_session.commit()
     if m.from_user.username is None:
         await m.answer(
             "❗️ Вы не указали имя пользвотеля в телеграмме, связь с другими пользователями бота будет невозможна"
@@ -289,7 +300,16 @@ async def start_sober_driver_order(c: types.CallbackQuery, state: FSMContext, db
 
     if user and (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
         await c.answer("Вы не имеете права публикоавть заказы")
-        return
+        return None
+    elif user.telegram_username != c.from_user.username:
+        if user.telegram_username is None:
+            user.telegram_username = c.from_user.username
+        else:
+            await c.answer(
+                "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
+                show_alert=True
+            )
+            return None
     await state.set_state(SoberDriverFSM.from_state)
 
     message = await c.message.answer(
@@ -398,10 +418,6 @@ async def handle_sdriver_description(m: types.Message, state: FSMContext, db_ses
         destination_point=s_data['end_point'],
         description=s_data['description']
     )
-
-    if order.creator.telegram_username != m.from_user.username:
-        order.creator.telegram_username = m.from_user.username
-        await db_session.commit()
     if m.from_user.username is None:
         await m.answer(
             "❗️ Вы не указали имя пользвотеля в телеграмме, связь с другими пользователями бота будет невозможна"
@@ -449,6 +465,15 @@ async def start_free_order(c: types.CallbackQuery, state: FSMContext, db_session
     if user and (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
         await c.answer("Вы не имеете права публикоавть заказы")
         return
+    if user.telegram_username != c.from_user.username:
+        if user.telegram_username is None:
+            user.telegram_username = c.from_user.username
+        else:
+            await c.answer(
+                "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
+                show_alert=True
+            )
+            return None
     await state.set_state(FreeOrderFSM.description_state)
 
     message = await c.message.answer(
@@ -520,10 +545,6 @@ async def handle_free_date(m: types.Message, state: FSMContext, db_session: Asyn
         description=s_data['description'],
         price=s_data['price']
     )
-
-    if order.creator.telegram_username != m.from_user.username:
-        order.creator.telegram_username = m.from_user.username
-        await db_session.commit()
     if m.from_user.username is None:
         await m.answer(
             "❗️ Вы не указали имя пользвотеля в телеграмме, связь с другими пользователями бота будет невозможна"
