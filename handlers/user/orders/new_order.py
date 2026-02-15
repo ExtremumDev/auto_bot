@@ -15,6 +15,9 @@ from utils.utils import check_user_blocked
 
 
 async def send_order_types(c: types.CallbackQuery, state: FSMContext):
+    if not c.from_user.username:
+        await c.answer("❗️ Для того, чтобы пользоваться этим разделом, необходимо иметь имя пользователя в телеграмме", show_alert=True)
+        return None
     await c.message.answer(
         "Выберите тип заказа",
         reply_markup=order_type_markup
@@ -30,6 +33,9 @@ async def send_order_types(c: types.CallbackQuery, state: FSMContext):
 
 @connection
 async def start_city_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
+    if not c.from_user.username:
+        await c.answer("❗️ Для того, чтобы пользоваться этим разделом, необходимо иметь имя пользователя в телеграмме", show_alert=True)
+        return None
     user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
 
     if user and (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
@@ -154,6 +160,9 @@ async def handle_city_description(m: types.Message, state: FSMContext, db_sessio
 
 @connection
 async def start_deliver_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
+    if not c.from_user.username:
+        await c.answer("❗️ Для того, чтобы пользоваться этим разделом, необходимо иметь имя пользователя в телеграмме", show_alert=True)
+        return None
     user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
 
     if user and (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
@@ -273,6 +282,9 @@ async def handle_delivery_description(m: types.Message, state: FSMContext, db_se
 
 @connection
 async def start_sober_driver_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
+    if not c.from_user.username:
+        await c.answer("❗️ Для того, чтобы пользоваться этим разделом, необходимо иметь имя пользователя в телеграмме", show_alert=True)
+        return None
     user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
 
     if user and (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
@@ -429,6 +441,9 @@ async def post_order(bot: Bot, order, db_session: AsyncSession):
 
 @connection
 async def start_free_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
+    if not c.from_user.username:
+        await c.answer("❗️ Для того, чтобы пользоваться этим разделом, необходимо иметь имя пользователя в телеграмме", show_alert=True)
+        return None
     user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
 
     if user and (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):

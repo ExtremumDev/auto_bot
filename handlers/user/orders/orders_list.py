@@ -14,6 +14,9 @@ from utils.utils import check_user_blocked
 
 @connection
 async def send_orders_list(c: types.CallbackQuery, db_session: AsyncSession, *args):
+    if not c.from_user.username:
+        await c.answer("❗️ Для того, чтобы пользоваться этим разделом, необходимо иметь имя пользователя в телеграмме", show_alert=True)
+        return None
     user = await UserDAO.get_user_with_cars(session=db_session, telegram_id=c.from_user.id)
 
     if user.driver:
