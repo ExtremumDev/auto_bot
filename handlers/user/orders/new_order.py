@@ -3,6 +3,7 @@ from aiogram import types, F, Dispatcher, Bot
 from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
+from aiogram.types import TelegramObject
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import OrderDAO, UserDAO
@@ -14,21 +15,31 @@ from utils.enums import OrderType
 from utils.utils import check_user_blocked
 
 
-async def send_order_types(c: types.CallbackQuery, state: FSMContext):
-    if not c.from_user.username:
+async def order_menu_open(m: types.Message):
+    await m.delete()
+    if await send_order_types(m):
+        await m.answer("❗️ Для того, чтобы пользоваться этим разделом, необходимо иметь имя пользователя в телеграмме")
+
+
+async def order_menu_open_callback(c: types.CallbackQuery):
+    if await send_order_types(c):
         await c.answer("❗️ Для того, чтобы пользоваться этим разделом, необходимо иметь имя пользователя в телеграмме", show_alert=True)
-        return None
-    await c.message.answer(
-        "Выберите тип заказа",
-        reply_markup=order_type_markup
-    )
-
-    await c.answer()
-
+    else:
+        await c.answer()
     try:
         await c.message.delete()
     except TelegramBadRequest:
         pass
+
+
+async def send_order_types(telegram: types.CallbackQuery | types.Message):
+    if not telegram.from_user.username:
+        return True
+    await telegram.bot.send_message(
+        chat_id=telegram.chat.id,
+        text="Выберите тип заказа",
+        reply_markup=order_type_markup
+    )
 
 
 @connection
@@ -38,7 +49,6 @@ async def start_city_order(c: types.CallbackQuery, state: FSMContext, db_session
         return None
     user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
 
-    print(user)
     if user:
         if user.is_blocked or (not user.driver) or (not user.driver.is_moderated):
             await c.answer("Вы не имеете права публикоавть заказы")
@@ -602,7 +612,8 @@ async def handle_free_date(m: types.Message, state: FSMContext, db_session: Asyn
 
 
 def register_orders_handlers(dp: Dispatcher):
-    dp.callback_query.register(send_order_types, F.data == "new_order")
+    dp.message.register(order_menu_open, F.text == "➕ Создать заказ")
+    dp.callback_query.register(order_menu_open_callback, F.data == "new_order")
 
     dp.callback_query.register(start_city_order, F.data == "ordertype_2")
     dp.message.register(handle_city_settlement, StateFilter(PlaceOrderFSM.settlement_state))

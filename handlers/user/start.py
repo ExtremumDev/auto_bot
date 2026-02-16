@@ -3,13 +3,14 @@ from aiogram.filters import CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.util import await_only
 
 from config import PASSPORTS_PHOTO_PATH, DRIVE_LICENSES_PATH
 from database.dao import UserDAO, DriverDAO
 from database.utils import connection
 from fsm.user.main import RegistrationFSM
 from markups.admin.user_manage import get_moderate_driver_markup
-from markups.user.main import get_main_markup, start_markup
+from markups.user.main import get_main_markup, start_markup, main_reply_markup
 from utils.messaging import send_message_to_admins
 from utils.utils import check_and_save_photo
 
@@ -34,8 +35,12 @@ async def start_cmd(m: types.Message, state: FSMContext, db_session: AsyncSessio
         )
 
         await m.answer(
-            "Добро пожаловать! Если вы водитель - заполните анкету по кнопке ниже👇"
-"Если нет - перейдите в главное меню по другой кнопке",
+            "Добро пожаловать!",
+            reply_markup=main_reply_markup
+        )
+        await m.answer(
+            text="""Если вы водитель - заполните анкету по кнопке ниже👇
+Если нет - перейдите в главное меню по другой кнопке""",
             reply_markup=start_markup
         )
 
@@ -49,21 +54,45 @@ async def start_cmd(m: types.Message, state: FSMContext, db_session: AsyncSessio
 # REGISTRATION
 #-------------
 
-@connection
-async def start_registration(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession, *args):
-    user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
 
-    if user.driver:
+async def open_registration(m: types.Message, state: FSMContext):
+    if await start_registration(m, state):
+        await m.answer(
+            "Вы уже заполняли анкету"
+        )
+
+    try:
+        await m.delete()
+    except:
+        pass
+
+
+async def open_registration_callback(c: types.CallbackQuery, state: FSMContext):
+
+    if await start_registration(c, state, ):
         await c.answer(
             "Вы уже заполняли анкету",
             show_alert=True
         )
     else:
+        await c.answer()
+
+
+@connection
+async def start_registration(telegram: types.CallbackQuery | types.Message, state: FSMContext, db_session: AsyncSession, *args):
+    user = await UserDAO.get_obj(session=db_session, telegram_id=telegram.from_user.id)
+
+    if user.driver:
+        return True
+    else:
         await state.set_state(RegistrationFSM.full_name_state)
 
-        await c.message.answer("Введите сво ФИО")
+        await telegram.bot.send_message(
+            chat_id=telegram.chat.id,
+            text="Введите сво ФИО"
+        )
+    return False
 
-        await c.answer()
 
 async def handle_full_name(m: types.Message, state: FSMContext):
     await state.set_state(RegistrationFSM.phone_number_state)
@@ -207,7 +236,8 @@ def register_user_start_handlers(dp: Dispatcher):
         StateFilter('*')
     )
 
-    dp.callback_query.register(start_registration, F.data == "fill_form")
+    dp.message.register(open_registration, F.text == "🚖 Стать водителем")
+    dp.callback_query.register(open_registration_callback, F.data == "fill_form")
     dp.message.register(handle_full_name, StateFilter(RegistrationFSM.full_name_state))
     dp.message.register(handle_phone_number, StateFilter(RegistrationFSM.phone_number_state))
     dp.message.register(handle_city, StateFilter(RegistrationFSM.city_state))

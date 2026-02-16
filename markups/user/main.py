@@ -1,4 +1,4 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
 from config import AdminsSettings
 
@@ -53,5 +53,12 @@ start_markup = InlineKeyboardMarkup(
 cancel_action_markup = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(text="❌ Отменить", callback_data="cancel_action")]
+    ]
+)
+
+main_reply_markup = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="➕ Создать заказ"), KeyboardButton(text="🚖 Стать водителем")],
+        [KeyboardButton(text="👤 Личный кабиент")],
     ]
 )
