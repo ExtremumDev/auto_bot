@@ -65,6 +65,12 @@ class User(Base):
         secondary="users_accepted_orderss"
     )
 
+    # statistics
+
+    orders_published: Mapped[int] = mapped_column(server_default="0")
+    accepted_orders_count: Mapped[int] = mapped_column(server_default="0")
+    orders_given: Mapped[int] = mapped_column(server_default="0")
+
 
 class Driver(Base):
     user_id: Mapped[int] = mapped_column(nullable=True)

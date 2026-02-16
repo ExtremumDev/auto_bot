@@ -39,7 +39,10 @@ async def send_user_card(c: types.CallbackQuery, db_session: AsyncSession, *args
         get_user_profile_descr(
             user.driver,
             user.driver.is_moderated if user.driver else False,
-            user.cars
+            user.cars,
+            orders_published=user.orders_published,
+            orders_accepted=user.accepted_orders_count,
+            orders_given=user.orders_given,
         ),
         reply_markup=get_main_user_manage_markup(user_id, user.is_blocked, user.is_admin, c.from_user.id in AdminsSettings.MAIN_ADMIN_ID)
     )

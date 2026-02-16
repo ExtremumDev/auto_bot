@@ -172,6 +172,7 @@ async def accept_order(c: types.CallbackQuery, db_session: AsyncSession, *args):
 
 
                 order.responded.append(user)
+                user.accepted_orders_count += 1
 
                 await c.message.answer(
                     f"Заказ был принят. Чат с создателем заказа @{order.creator.telegram_username}"
@@ -240,6 +241,8 @@ async def give_order_to_executor(c: types.CallbackQuery, db_session: AsyncSessio
             order.order_status = OrderStatus.ACCEPTED.value
             order.executor = executor
             order.responded.clear()
+
+            executor.orders_given += 1
             await db_session.commit()
 
             await c.message.answer(

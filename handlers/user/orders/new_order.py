@@ -465,6 +465,9 @@ async def handle_sdriver_description(m: types.Message, state: FSMContext, db_ses
 async def post_order(bot: Bot, order, db_session: AsyncSession):
     users = await UserDAO.get_drivers(session=db_session)
 
+    order.creator.orders_published += 1
+    await db_session.commit()
+
     for u in users:
         if u.id != order.creator.id:
             try:

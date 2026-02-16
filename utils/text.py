@@ -14,19 +14,25 @@ def get_car_description(brand: str, model: str, release_year: int, car_number: s
 """
 
 
-def get_user_profile_descr(is_drive: bool, is_drive_confirmed: bool, cars: list) -> str:
+def get_user_profile_descr(
+        is_drive: bool, is_drive_confirmed: bool, cars: list, orders_published: int, orders_accepted: int, orders_given: int
+) -> str:
     profile_descr = """Профиль пользователя:
 {drive_form}
 {drive_form_status}
 
 Зарегистрировано автомобилей: {cars_count}
 
+Заказов опубликовано: {orders_published}
+Принято заказов: {orders_accepted}
+Заказов отдано: {orders_given}
 """
 
     return profile_descr.format(
         drive_form="✅ Анкета водителя заполнена" if is_drive else "❌ Анкета водителя не заполнена",
         drive_form_status="✅ Анкета водителя подтверждена" if is_drive_confirmed else "⏳ Анкета водителя ожидает модерации",
-        cars_count=len(cars) if cars else 0
+        cars_count=len(cars) if cars else 0, orders_published=orders_published, orders_accepted=orders_accepted, orders_given=orders_given,
+
     )
 
 
