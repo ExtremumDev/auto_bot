@@ -325,6 +325,7 @@ async def search_users(m: types.Message, state: FSMContext, db_session: AsyncSes
 @connection
 async def delete_user(c: types.CallbackQuery, db_session: AsyncSession, *args):
     user_id = await UserDAO.delete_obj(session=db_session, obj_id=int(c.data.split('_')[1]))
+    await db_session.commit()
 
     try:
         await c.message.delete()
@@ -333,7 +334,7 @@ async def delete_user(c: types.CallbackQuery, db_session: AsyncSession, *args):
             reply_markup=None
         )
 
-    await c.answer("Пользователь успешно удалён")
+    await c.answer("Пользователь успешно удалён", show_alert=True)
 
 
 def register_users_manage_handers(dp: Dispatcher):
