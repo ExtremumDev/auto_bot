@@ -38,8 +38,9 @@ async def start_city_order(c: types.CallbackQuery, state: FSMContext, db_session
         return None
     user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
 
+    print(user)
     if user:
-        if (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
+        if user.is_blocked or (not user.driver) or (not user.driver.is_moderated):
             await c.answer("Вы не имеете права публикоавть заказы")
             return
         elif user.telegram_username != c.from_user.username:
