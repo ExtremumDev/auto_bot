@@ -8,12 +8,13 @@ from utils.text import get_user_profile_descr
 
 
 async def profile_callback(c: types.CallbackQuery):
-    await send_profile_info(c.message)
+    await send_profile_info(c.message, user_id=c.from_user.id)
+    await c.answer()
 
 
 @connection
-async def send_profile_info(m: types.Message, db_session: AsyncSession, *args):
-    user = await UserDAO.get_user_with_cars(session=db_session, telegram_id=m.from_user.id)
+async def send_profile_info(m: types.Message, db_session: AsyncSession, user_id: int = None,*args):
+    user = await UserDAO.get_user_with_cars(session=db_session, telegram_id=m.from_user.id if not user_id else user_id)
 
     await m.answer(
         text=get_user_profile_descr(

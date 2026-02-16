@@ -1,4 +1,4 @@
-from aiogram import types, Dispatcher, F
+from aiogram import types, Dispatcher, F, Bot
 from aiogram.filters import CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 
@@ -56,7 +56,7 @@ async def start_cmd(m: types.Message, state: FSMContext, db_session: AsyncSessio
 
 
 async def open_registration(m: types.Message, state: FSMContext):
-    if await start_registration(m, state):
+    if await start_registration(m.bot, m.chat.id, m.from_user, state):
         await m.answer(
             "Вы уже заполняли анкету"
         )
@@ -69,7 +69,7 @@ async def open_registration(m: types.Message, state: FSMContext):
 
 async def open_registration_callback(c: types.CallbackQuery, state: FSMContext):
 
-    if await start_registration(c, state, ):
+    if await start_registration(c.bot, c.message.chat.id, c.from_user, state, ):
         await c.answer(
             "Вы уже заполняли анкету",
             show_alert=True
@@ -79,16 +79,16 @@ async def open_registration_callback(c: types.CallbackQuery, state: FSMContext):
 
 
 @connection
-async def start_registration(telegram: types.CallbackQuery | types.Message, state: FSMContext, db_session: AsyncSession, *args):
-    user = await UserDAO.get_obj(session=db_session, telegram_id=telegram.from_user.id)
+async def start_registration(bot: Bot, chat_id: int, user: types.User, state: FSMContext, db_session: AsyncSession, *args):
+    user = await UserDAO.get_obj(session=db_session, telegram_id=user.id)
 
     if user.driver:
         return True
     else:
         await state.set_state(RegistrationFSM.full_name_state)
 
-        await telegram.bot.send_message(
-            chat_id=telegram.chat.id,
+        await bot.send_message(
+            chat_id=chat_id,
             text="Введите сво ФИО"
         )
     return False

@@ -17,12 +17,12 @@ from utils.utils import check_user_blocked
 
 async def order_menu_open(m: types.Message):
     await m.delete()
-    if await send_order_types(m):
+    if await send_order_types(m.bot, m.chat.id, m.from_user):
         await m.answer("❗️ Для того, чтобы пользоваться этим разделом, необходимо иметь имя пользователя в телеграмме")
 
 
 async def order_menu_open_callback(c: types.CallbackQuery):
-    if await send_order_types(c):
+    if await send_order_types(c.bot, c.message.chat.id, c.from_user):
         await c.answer("❗️ Для того, чтобы пользоваться этим разделом, необходимо иметь имя пользователя в телеграмме", show_alert=True)
     else:
         await c.answer()
@@ -32,11 +32,11 @@ async def order_menu_open_callback(c: types.CallbackQuery):
         pass
 
 
-async def send_order_types(telegram: types.CallbackQuery | types.Message):
-    if not telegram.from_user.username:
+async def send_order_types(bot: Bot, chat_id: int, user: types.User):
+    if not user.username:
         return True
-    await telegram.bot.send_message(
-        chat_id=telegram.chat.id,
+    await bot.send_message(
+        chat_id=chat_id,
         text="Выберите тип заказа",
         reply_markup=order_type_markup
     )
