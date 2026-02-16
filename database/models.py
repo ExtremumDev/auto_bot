@@ -106,7 +106,7 @@ class Car(Base):
     video: Mapped[str] = mapped_column(String(100), nullable=True)
 
     user: Mapped["User"] = relationship("User")
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
     def __str__(self):
         return f"{self.brand} {self.model} - {self.car_number}"
@@ -172,7 +172,7 @@ class Order(Base):
     date: Mapped[str] = mapped_column(String(30), nullable=True)
     order_status: Mapped[OrderStatus] = mapped_column(TINYINT, default=0, server_default="0")
 
-    creator_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
+    creator_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
     creator: Mapped["User"] = relationship(
         "User",
         lazy="joined",
@@ -180,7 +180,7 @@ class Order(Base):
         foreign_keys=[creator_id],
     )
 
-    executor_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
+    executor_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     executor: Mapped["User"] = relationship(
         "User",
         back_populates="orders",

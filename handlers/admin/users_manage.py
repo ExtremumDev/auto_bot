@@ -319,6 +319,20 @@ async def search_users(m: types.Message, state: FSMContext, db_session: AsyncSes
         )
 
 
+@connection
+async def delete_user(c: types.CallbackQuery, db_session: AsyncSession, *args):
+    user_id = await UserDAO.delete_obj(session=db_session, obj_id=int(c.data.split('_')[1]))
+
+    try:
+        await c.message.delete()
+    except:
+        await c.message.edit_reply_markup(
+            reply_markup=None
+        )
+
+    await c.answer("Пользователь успешно удалён")
+
+
 def register_users_manage_handers(dp: Dispatcher):
     dp.callback_query.register(send_users_list, F.data == "users_manage", AdminFilter())
     UsersPaging.register_paging_handlers(dp, 'um')
@@ -343,3 +357,5 @@ def register_users_manage_handers(dp: Dispatcher):
 
     dp.callback_query.register(start_users_searching, F.data == "search_users", AdminFilter())
     dp.message.register(search_users, StateFilter(UserSearchFSM.username_state))
+
+    dp.callback_query.register(delete_user, F.data.startswith("deluser_"))

@@ -38,18 +38,25 @@ async def start_city_order(c: types.CallbackQuery, state: FSMContext, db_session
         return None
     user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
 
-    if user and (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
-        await c.answer("Вы не имеете права публикоавть заказы")
-        return
-    elif user.telegram_username != c.from_user.username:
-        if user.telegram_username is None:
-            user.telegram_username = c.from_user.username
-        else:
-            await c.answer(
-                "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
-                show_alert=True
-            )
-            return None
+    if user:
+        if (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
+            await c.answer("Вы не имеете права публикоавть заказы")
+            return
+        elif user.telegram_username != c.from_user.username:
+            if user.telegram_username is None:
+                user.telegram_username = c.from_user.username
+            else:
+                await c.answer(
+                    "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
+                    show_alert=True
+                )
+                return None
+    else:
+        await UserDAO.add(
+            db_session,
+            telegram_id=c.from_user.id,
+            telegram_username=c.from_user.username
+        )
 
     await state.set_state(PlaceOrderFSM.settlement_state)
     message = await c.message.answer(
@@ -171,18 +178,26 @@ async def start_deliver_order(c: types.CallbackQuery, state: FSMContext, db_sess
         return None
     user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
 
-    if user and (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
-        await c.answer("Вы не имеете права публикоавть заказы")
-        return None
-    elif user.telegram_username != c.from_user.username:
-        if user.telegram_username is None:
-            user.telegram_username = c.from_user.username
-        else:
-            await c.answer(
-                "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
-                show_alert=True
-            )
+    if user:
+        if (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
+            await c.answer("Вы не имеете права публикоавть заказы")
             return None
+
+        elif user.telegram_username != c.from_user.username:
+            if user.telegram_username is None:
+                user.telegram_username = c.from_user.username
+            else:
+                await c.answer(
+                    "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
+                    show_alert=True
+                )
+                return None
+    else:
+        await UserDAO.add(
+            db_session,
+            telegram_id=c.from_user.id,
+            telegram_username=c.from_user.username
+        )
     await state.set_state(DeliveryOrderFSM.settlement_state)
 
     message = await c.message.answer(
@@ -298,18 +313,25 @@ async def start_sober_driver_order(c: types.CallbackQuery, state: FSMContext, db
         return None
     user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
 
-    if user and (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
-        await c.answer("Вы не имеете права публикоавть заказы")
-        return None
-    elif user.telegram_username != c.from_user.username:
-        if user.telegram_username is None:
-            user.telegram_username = c.from_user.username
-        else:
-            await c.answer(
-                "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
-                show_alert=True
-            )
+    if user:
+        if (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
+            await c.answer("Вы не имеете права публикоавть заказы")
             return None
+        elif user.telegram_username != c.from_user.username:
+            if user.telegram_username is None:
+                user.telegram_username = c.from_user.username
+            else:
+                await c.answer(
+                    "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
+                    show_alert=True
+                )
+                return None
+    else:
+        await UserDAO.add(
+            db_session,
+            telegram_id=c.from_user.id,
+            telegram_username=c.from_user.username
+        )
     await state.set_state(SoberDriverFSM.from_state)
 
     message = await c.message.answer(
@@ -462,18 +484,25 @@ async def start_free_order(c: types.CallbackQuery, state: FSMContext, db_session
         return None
     user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
 
-    if user and (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
-        await c.answer("Вы не имеете права публикоавть заказы")
-        return
-    if user.telegram_username != c.from_user.username:
-        if user.telegram_username is None:
-            user.telegram_username = c.from_user.username
-        else:
-            await c.answer(
-                "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
-                show_alert=True
-            )
-            return None
+    if user:
+        if (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
+            await c.answer("Вы не имеете права публикоавть заказы")
+            return
+        if user.telegram_username != c.from_user.username:
+            if user.telegram_username is None:
+                user.telegram_username = c.from_user.username
+            else:
+                await c.answer(
+                    "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
+                    show_alert=True
+                )
+                return None
+    else:
+        await UserDAO.add(
+            db_session,
+            telegram_id=c.from_user.id,
+            telegram_username=c.from_user.username
+        )
     await state.set_state(FreeOrderFSM.description_state)
 
     message = await c.message.answer(

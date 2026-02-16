@@ -19,15 +19,22 @@ async def send_orders_list(c: types.CallbackQuery, db_session: AsyncSession, *ar
         return None
     user = await UserDAO.get_user_with_cars(session=db_session, telegram_id=c.from_user.id)
 
-    if user.telegram_username != c.from_user.username:
-        if user.telegram_username is None:
-            user.telegram_username = c.from_user.username
-        else:
-            await c.answer(
-                "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
-                show_alert=True
-            )
-            return None
+    if user:
+        if user.telegram_username != c.from_user.username:
+            if user.telegram_username is None:
+                user.telegram_username = c.from_user.username
+            else:
+                await c.answer(
+                    "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
+                    show_alert=True
+                )
+                return None
+    else:
+        user = await UserDAO.add(
+            db_session,
+            telegram_id=c.from_user.id,
+            telegram_username=c.from_user.username
+        )
 
     if user.driver:
         if user.driver.is_moderated:
@@ -153,6 +160,13 @@ async def accept_order(c: types.CallbackQuery, db_session: AsyncSession, *args):
             )
         else:
             user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
+
+            if not user:
+                user = await UserDAO.add(
+                    db_session,
+                    telegram_id=c.from_user.id,
+                    telegram_username=c.from_user.username
+                )
 
             if not user in order.responded:
 
