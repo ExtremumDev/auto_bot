@@ -24,7 +24,7 @@ async def start_cmd(m: types.Message, state: FSMContext, db_session: AsyncSessio
 
         await m.answer(
             "Что хотите сделать?",
-            reply_markup=get_main_markup(m.from_user.id)
+            reply_markup=main_reply_markup
         )
 
     else:
