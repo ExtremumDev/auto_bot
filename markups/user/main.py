@@ -60,5 +60,6 @@ main_reply_markup = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="➕ Создать заказ"), KeyboardButton(text="🚖 Стать водителем")],
         [KeyboardButton(text="👤 Личный кабиент")],
-    ]
+    ],
+    resize_keyboard=True
 )
