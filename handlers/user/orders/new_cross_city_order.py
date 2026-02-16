@@ -18,18 +18,24 @@ from utils.utils import check_user_blocked
 async def start_order(c: types.CallbackQuery, state: FSMContext, db_session: AsyncSession):
     user = await UserDAO.get_obj(session=db_session, telegram_id=c.from_user.id)
 
-    if user and (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
-        await c.answer("Вы не имеете права публикоавть заказы")
-        return None
-    elif user.telegram_username != c.from_user.username:
-        if user.telegram_username is None:
-            user.telegram_username = c.from_user.username
-        else:
-            await c.answer(
-                "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
-                show_alert=True
-            )
+    if user:
+        if (user.is_blocked or (not user.driver) or (not user.driver.is_moderated)):
+            await c.answer("Вы не имеете права публикоавть заказы")
             return None
+        elif user.telegram_username != c.from_user.username:
+            if user.telegram_username is None:
+                user.telegram_username = c.from_user.username
+            else:
+                await c.answer(
+                    "Вы изменили имя пользователя, доступ к публикации и принятию заказов ограничен. Верните прежнее имя, чтоб возобновить доступ",
+                    show_alert=True
+                )
+    else:
+        await UserDAO.add(
+            db_session,
+            telegram_id=c.from_user.id,
+            telegram_username=c.from_user.username
+        )
     order_type_number = int(c.data.split('_')[1])
 
     order_type = OrderType(order_type_number)
