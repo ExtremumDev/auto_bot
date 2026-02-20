@@ -15,12 +15,12 @@ def get_manage_order_markup(order_id: int, extended: bool = True):
         ]
     )
 
-    if extended:
-        keyboard.inline_keyboard.extend(
-            [
-                [InlineKeyboardButton(text="Редактировать заказ", callback_data=f"editorder_{order_id}")]
-            ]
-        )
+    # if extended:
+    #     keyboard.inline_keyboard.extend(
+    #         [
+    #             [InlineKeyboardButton(text="Редактировать заказ", callback_data=f"editorder_{order_id}")]
+    #         ]
+    #     )
 
     return keyboard
 

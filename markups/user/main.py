@@ -10,7 +10,6 @@ def get_main_markup(user_id: int):
             [InlineKeyboardButton(text="Создать заказ", callback_data="new_order")],
             [InlineKeyboardButton(text="Активные заказы", callback_data="active_orders")],
             [InlineKeyboardButton(text="ПРАВИЛА", callback_data="rules")],
-            [InlineKeyboardButton(text="Образцы оформления заказов", callback_data="orders_rules")]
         ]
     )
 
